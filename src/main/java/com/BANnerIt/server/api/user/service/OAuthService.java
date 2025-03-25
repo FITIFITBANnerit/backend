@@ -8,7 +8,6 @@ import com.BANnerIt.server.global.auth.JwtTokenUtil;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -37,7 +36,7 @@ public class OAuthService {
         Member member = memberRepository.findByEmail(email)
                 .orElseGet(() -> registerNewUser(email, name, pictureUrl));
 
-        String jwtToken = jwtTokenUtil.generateToken(email);
+        String jwtToken = jwtTokenUtil.generateToken(member.getUserId());
         UserData userData = new UserData(name, email, pictureUrl);
 
         Map<String, Object> response = new HashMap<>();

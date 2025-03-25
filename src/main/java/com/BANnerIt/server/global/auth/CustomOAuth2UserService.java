@@ -21,11 +21,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-
         Map<String, Object> attributes = oAuth2User.getAttributes();
-        String email = (String) attributes.get("email");
-        Member member = memberService.findMemberByEmail(email);
+
+        String userId = (String) attributes.get("sub");
+
+        Member member = memberService.findMemberById(Long.parseLong(userId));
 
         return new CustomOAuth2User(attributes, member);
     }
+
+
 }

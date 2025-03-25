@@ -22,19 +22,20 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.memberRepository = memberRepository;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Member member = memberRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
-
+    public UserDetails loadUserById(Long userId) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
         MemberResponse memberResponse = member.toMemberResponse();
-
-        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + memberResponse.getRole()));
 
         return new org.springframework.security.core.userdetails.User(
                 memberResponse.getEmail(),
                 "",
-                authorities
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + member.getRole()))
         );
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return null;
     }
 }

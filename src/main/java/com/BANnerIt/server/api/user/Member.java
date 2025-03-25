@@ -74,7 +74,6 @@ public class Member {
         return new UserData(this.name, this.email, this.userProfile);
     }
 
-    // Member 클래스에 MemberResponse 변환 메서드를 추가
     public MemberResponse toMemberResponse() {
         return new MemberResponse(
                 this.userId,
@@ -85,7 +84,6 @@ public class Member {
         );
     }
 
-    // Getter methods are not necessary since you don't want to use them
     public Long getUserId() {
         return userId;
     }

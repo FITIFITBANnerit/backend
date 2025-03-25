@@ -36,5 +36,4 @@ public class OAuthController {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다.");
         }
     }
-
 }

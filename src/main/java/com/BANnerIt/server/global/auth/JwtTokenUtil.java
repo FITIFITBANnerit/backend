@@ -20,8 +20,8 @@ public class JwtTokenUtil {
 
     private static final long JWT_EXPIRATION = 1000 * 60 * 60 * 10;
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Long extractUserId(String token) {
+        return Long.parseLong(extractClaim(token, Claims::getSubject));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -37,7 +37,6 @@ public class JwtTokenUtil {
                 .getBody();
     }
 
-
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
@@ -46,17 +45,18 @@ public class JwtTokenUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public boolean validateToken(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (username.equals(extractedUsername) && !isTokenExpired(token));
+    public boolean validateToken(String token, Long userId) {
+        final Long extractedUserId = extractUserId(token);
+        return (userId.equals(extractedUserId) && !isTokenExpired(token));
     }
+
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String email) {
+    public String generateToken(Long userId) {
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(String.valueOf(userId)) // user_id를 subject로 설정
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
