@@ -1,4 +1,4 @@
-package com.example.BANnerIt;
+package com.BANnerIt.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
