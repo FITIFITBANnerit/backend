@@ -1,6 +1,6 @@
 package com.BANnerIt.server.api.banner.dto.report;
 
-import com.BANnerIt.server.api.banner.dto.ErrorDetails;
+import com.BANnerIt.server.api.banner.dto.ErrorResponse;
 
-public record SaveReportResponse(ErrorDetails error, Long reportId) {
+public record SaveReportResponse(ErrorResponse error, Long reportId) {
 }
