@@ -98,7 +98,7 @@ public class ReportService {
         List<BannerDetailsWithIdDto> bannerDtos = new ArrayList<>();
         for (Banner b : banners) {
             BannerDetailsWithIdDto banner = new BannerDetailsWithIdDto(b.getBannerId(),
-                    b.getStatus(), b.getCompanyName(), b.getPhoneNumber());
+                    b.getStatus(), b.getCategory(), b.getCompanyName(), b.getPhoneNumber());
             bannerDtos.add(banner);
         }
         return bannerDtos;

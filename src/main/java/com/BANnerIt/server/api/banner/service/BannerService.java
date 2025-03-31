@@ -34,6 +34,7 @@ public class BannerService {
             Banner banner = Banner.builder()
                     .report(report)
                     .status(bannerDetails.status())
+                    .category(bannerDetails.category())
                     .companyName(bannerDetails.companyName())
                     .phoneNumber(bannerDetails.phoneNumber())
                     .build();

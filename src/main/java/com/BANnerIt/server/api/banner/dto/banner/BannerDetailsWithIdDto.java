@@ -4,6 +4,7 @@ import com.BANnerIt.server.api.banner.domain.BannerStatus;
 
 public record BannerDetailsWithIdDto(Long bannerId,
                                      BannerStatus status,
+                                     String category,
                                      String companyName,
                                      String phoneNumber) {
 }

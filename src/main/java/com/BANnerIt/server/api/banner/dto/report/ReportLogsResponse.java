@@ -1,8 +1,8 @@
 package com.BANnerIt.server.api.banner.dto.report;
 
-import com.BANnerIt.server.api.banner.dto.ErrorDetails;
+import com.BANnerIt.server.global.exception.ApiResponse;
 
 import java.util.List;
 
-public record ReportLogsResponse(ErrorDetails error, List<ReportLogDto> reportLogs) {
+public record ReportLogsResponse(List<ReportLogDto> reportLogs) {
 }

@@ -23,6 +23,7 @@ public class Banner {
     @Enumerated(EnumType.STRING)
     private BannerStatus status;
 
+    private String category;
     private String companyName;
     private String phoneNumber;
     private LocalDateTime createdAt;
