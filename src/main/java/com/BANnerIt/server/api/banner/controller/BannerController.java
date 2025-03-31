@@ -1,5 +1,9 @@
 package com.BANnerIt.server.api.banner.controller;
 
+<<<<<<< HEAD
+=======
+import com.BANnerIt.server.api.banner.dto.ErrorResponse;
+>>>>>>> 03b4283acb1dfbb9a775d40c332eb97e163801a9
 import com.BANnerIt.server.api.banner.dto.banner.SaveBannerRequest;
 import com.BANnerIt.server.api.banner.dto.banner.UpdateBannerRequest;
 import com.BANnerIt.server.api.banner.service.BannerService;
