@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,30 +60,19 @@ public class ReportService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<ReportLogDto> reportLogs = new ArrayList<>();
-
-        for(Report r : member.getCreatedReports()){
-            ReportLogDto report = getReportLogDto(r);
-
-            reportLogs.add(report);
-        }
-
-        return reportLogs;
+        return member.getCreatedReports().stream()
+                .map(ReportService::getReportLogDto)
+                .toList();
     }
 
     /*전체 현수막 신고기록 조회*/
-    public List<ReportLogDto> getAllReportLogs(){
-        List<Report> reports = reportRepository.findAll(); // 전체 신고 기록 조회
-        List<ReportLogDto> reportLogs = new ArrayList<>();
+    public List<ReportLogDto> getAllReportLogs() {
+        List<Report> reports = reportRepository.findAll();
 
-        for (Report r : reports) {
-            ReportLogDto report = getReportLogDto(r); // Report 엔티티 -> ReportLogDto로 변환
-            reportLogs.add(report);
-        }
-
-        return reportLogs;
+        return reports.stream()
+                .map(ReportService::getReportLogDto)
+                .collect(Collectors.toList());
     }
-
 
     // 신고 기록을 ReportLogDto로 변환
     private static ReportLogDto getReportLogDto(Report r) {
@@ -95,12 +85,9 @@ public class ReportService {
 
     // 배너 리스트를 DTO로 변환
     private static List<BannerDetailsWithIdDto> convertBannersToDto(List<Banner> banners) {
-        List<BannerDetailsWithIdDto> bannerDtos = new ArrayList<>();
-        for (Banner b : banners) {
-            BannerDetailsWithIdDto banner = new BannerDetailsWithIdDto(b.getBannerId(),
-                    b.getStatus(), b.getCategory(), b.getCompanyName(), b.getPhoneNumber());
-            bannerDtos.add(banner);
-        }
-        return bannerDtos;
+        return banners.stream()
+                .map(b -> new BannerDetailsWithIdDto(b.getBannerId(),
+                        b.getStatus(), b.getCategory(), b.getCompanyName(), b.getPhoneNumber()))
+                .collect(Collectors.toList());
     }
 }
