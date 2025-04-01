@@ -1,17 +1,21 @@
 package com.BANnerIt.server.api.user;
 
+import com.BANnerIt.server.api.banner.domain.Report;
 import com.BANnerIt.server.api.user.dto.MemberResponse;
 import com.BANnerIt.server.api.user.dto.MemberUpdateRequest;
 import com.BANnerIt.server.api.user.dto.UserData;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 @Table(name = "member")
 public class Member {
 
@@ -46,6 +50,13 @@ public class Member {
 
     @Column(nullable = false, length = 50)
     private String role;
+
+    //
+    @OneToMany(mappedBy = "createdBy")
+    private List<Report> createdReports;
+
+    @OneToMany(mappedBy = "reviewedBy")
+    private List<Report> reviewedReports;
 
     @Builder
     public Member(String email, String name, String password, String userProfile, boolean serviceAccept, String platformType, String role, LocalDate userRegisteredAt, LocalDate userModifiedAt) {
