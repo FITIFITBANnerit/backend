@@ -12,19 +12,19 @@ public record ApiResponse<T>(
         return new ApiResponse<>(null, user_data, null);
     }
 
-    public static <T> ApiResponse<T> created(@Nullable final T user_data) {
-        return new ApiResponse<>(null, user_data, null);
-    }
-
     public static <T> ApiResponse<T> success(@Nullable final String jwt, @Nullable final T user_data) {
         return new ApiResponse<>(jwt, user_data, null);
     }
 
     public static <T> ApiResponse<T> fail(final CustomException e) {
-        return new ApiResponse<>(null, null, ExceptionDto.of(e.getErrorCode()));
+        return fail(e.getErrorCode());
     }
 
-    public static <T> ApiResponse<T> fail(String message, HttpStatus status) {
+    public static <T> ApiResponse<T> fail(final ErrorCode errorCode) {
+        return new ApiResponse<>(null, null, ExceptionDto.of(errorCode));
+    }
+
+    public static <T> ApiResponse<T> fail(final String message, final HttpStatus status) {
         return new ApiResponse<>(null, null, new ExceptionDto(status.value(), message));
     }
 }
