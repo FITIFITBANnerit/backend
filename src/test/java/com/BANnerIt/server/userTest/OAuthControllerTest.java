@@ -1,8 +1,12 @@
 package com.BANnerIt.server.userTest;
 
 
+import com.BANnerIt.server.api.user.dto.AutoLoginResponse;
+import com.BANnerIt.server.api.user.dto.UserData;
 import com.BANnerIt.server.api.user.service.IdTokenVerify;
 import com.BANnerIt.server.api.user.service.OAuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,8 +59,6 @@ class OAuthControllerTest {
                 .andExpect(status().isOk());
     }
 
-
-
     @Test
     public void validateTokenTest_unauthorized() throws Exception {
         when(oAuthService.authenticateUser("invalidToken"))
@@ -78,6 +81,28 @@ class OAuthControllerTest {
                         .content("{\"id_token\": \"" + validToken + "\"}"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error.message").value("서버 내부 오류입니다."));
+    }
+
+    @Test
+    @DisplayName("refreshAccessToken_성공적으로_토큰을_갱신한다")
+    void refreshAccessToken_성공적으로_토큰을_갱신한다() throws Exception {
+        // given
+        String token = "validToken";
+        String jwt = "newJwtAccessToken";
+        UserData userData = new UserData( "테스트유저","test@email.com", "프로필 사진");
+        AutoLoginResponse autoLoginResponse = new AutoLoginResponse(jwt, userData);
+
+        when(oAuthService.extractAccessTokenFromHeader(any(HttpServletRequest.class))).thenReturn(token);
+        when(oAuthService.autoLogin(token)).thenReturn(autoLoginResponse);
+
+
+        mockMvc.perform(post("/oauth/refresh"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.jwt").value(jwt))
+                .andExpect(jsonPath("$.user_data.email").value("test@email.com"))
+                .andExpect(jsonPath("$.user_data.name").value("테스트유저"))
+                .andExpect(jsonPath("$.user_data.profile_image_url").value("프로필 사진"))
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
 }

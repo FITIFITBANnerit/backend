@@ -11,5 +11,5 @@ public record UserData(
         String email,
 
         @JsonProperty("profile_image_url")
-        String profileImageUrl
+        String userProfileUrl
 ) { }

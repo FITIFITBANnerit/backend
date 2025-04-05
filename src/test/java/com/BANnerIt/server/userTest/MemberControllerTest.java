@@ -1,10 +1,14 @@
 package com.BANnerIt.server.userTest;
 
 import com.BANnerIt.server.api.user.controller.MemberController;
+import com.BANnerIt.server.api.user.dto.MemberResponse;
 import com.BANnerIt.server.api.user.dto.MemberSignUpRequest;
 import com.BANnerIt.server.api.user.dto.MemberUpdateRequest;
 import com.BANnerIt.server.api.user.service.MemberService;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
+import com.BANnerIt.server.global.exception.CustomException;
+import com.BANnerIt.server.global.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -16,9 +20,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -46,65 +52,54 @@ class MemberControllerTest {
     }
 
     @Test
-    void signUpTest() throws Exception {
-        MemberSignUpRequest request = new MemberSignUpRequest("test@example.com", "password", "Test User");
-
-        mockMvc.perform(post("/users/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding("UTF-8")
-                        .content("{\"email\":\"test@example.com\", \"password\":\"password\", \"name\":\"Test User\"}"))
-                .andExpect(jsonPath("$.user_data").value("회원가입이 완료되었습니다."))
-                .andExpect(jsonPath("$.error").value(nullValue()));
-
-        verify(memberService, times(1)).signUp(any(MemberSignUpRequest.class));
-    }
-
-    @Test
-    void updateUserTest() throws Exception {
+    void 유저_정보를_수정한다() throws Exception {
+        // given
         String token = "validToken";
-        String email = "test@example.com";
 
         MemberUpdateRequest request = new MemberUpdateRequest(
-                email,
+                "test@example.com",
                 "Updated User",
                 "Updated User",
                 "New Profile",
                 true
         );
 
-        when(jwtTokenUtil.extractUsername(token)).thenReturn(email);
 
+        when(memberService.extractUserId("Bearer " + token)).thenReturn(1L);
+
+        // when & then
         mockMvc.perform(patch("/users/update")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding("UTF-8")
-                        .content("{\"mail\":\"" + email + "\", \"updatedUser\":\"Updated User\", \"name\":\"Updated User\", \"userProfile\":\"New Profile\", \"b\":true}"))
+                        .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user_data").value("회원정보가 수정되었습니다."))
-                .andExpect(jsonPath("$.error").value(nullValue()));
+                .andExpect(jsonPath("$.user_data").value("회원정보가 수정되었습니다."));
 
-        verify(memberService, times(1)).updateUser(eq(email), any(MemberUpdateRequest.class));
+        verify(memberService).updateUser(eq(1L), any(MemberUpdateRequest.class));
     }
 
+
     @Test
-    void deleteUserTest() throws Exception {
+    void 유저를_탈퇴한다() throws Exception {
+        // given
         String token = "validToken";
-        String email = "test@example.com";
 
-        when(jwtTokenUtil.extractUsername(token)).thenReturn(email);
+        when(jwtTokenUtil.extractUserId(token)).thenReturn(1L);
+        doNothing().when(memberService).deleteMember(token);
 
-        mockMvc.perform(delete("/users/delete", 1L)
+        // when & then
+        mockMvc.perform(delete("/users/delete")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwt").value(nullValue()))
+                .andExpect(jsonPath("$.jwt").value((Object) null))
                 .andExpect(jsonPath("$.user_data").value("회원탈퇴가 완료되었습니다."))
-                .andExpect(jsonPath("$.error").value(nullValue()));
+                .andExpect(jsonPath("$.error").value((Object) null));
 
-        verify(memberService, times(1)).deleteUser(eq(email));
+        verify(memberService, times(1)).deleteMember(eq(token));
     }
 
     @Test
-    void logoutTest() throws Exception {
+    void logout_로그아웃을_한다() throws Exception {
         String token = "validToken";
 
         mockMvc.perform(post("/users/logout")
@@ -116,4 +111,36 @@ class MemberControllerTest {
 
         verify(memberService, times(1)).logout(eq(token));
     }
+
+    @Test
+    void getUserDetails_성공적으로_조회한다() throws Exception {
+        // given
+        String token = "validToken";
+        String authorizationHeader = "Bearer " + token;
+
+        Long extractedUserId = 1L;
+        MemberResponse response = new MemberResponse(
+                1L,
+                "test@example.com",
+                "테스트 유저",
+                "USER",
+                "프로필 이미지"
+        );
+        given(memberService.extractUserId(authorizationHeader)).willReturn(extractedUserId);
+        given(memberService.getUserDetails(extractedUserId)).willReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/users/userdetail")
+                        .header("Authorization", authorizationHeader))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user_data.email").value("test@example.com"))
+                .andExpect(jsonPath("$.user_data.name").value("테스트 유저"))
+                .andExpect(jsonPath("$.user_data.userProfileUrl").value("프로필 이미지"))
+                .andExpect(jsonPath("$.user_data.isDeleted").value(true))
+                .andExpect(jsonPath("$.error").value(nullValue()));
+
+        verify(memberService, times(1)).extractUserId(authorizationHeader);
+        verify(memberService, times(1)).getUserDetails(extractedUserId);
+    }
+
 }

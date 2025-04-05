@@ -20,7 +20,7 @@ public class ExceptionDto {
         return new ExceptionDto(errorCode);
     }
 
-    // Getter 메서드 추가
+
     public int getCode() {
         return code;
     }

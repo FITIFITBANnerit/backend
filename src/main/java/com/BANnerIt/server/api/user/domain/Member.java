@@ -1,9 +1,8 @@
-package com.BANnerIt.server.api.user;
+package com.BANnerIt.server.api.user.domain;
 
 import com.BANnerIt.server.api.banner.domain.Report;
 import com.BANnerIt.server.api.user.dto.MemberResponse;
 import com.BANnerIt.server.api.user.dto.MemberUpdateRequest;
-import com.BANnerIt.server.api.user.dto.UserData;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -51,7 +50,6 @@ public class Member {
     @Column(nullable = false, length = 50)
     private String role;
 
-    //
     @OneToMany(mappedBy = "createdBy")
     private List<Report> createdReports;
 
@@ -81,10 +79,6 @@ public class Member {
         this.userModifiedAt = LocalDate.now();
     }
 
-    public UserData toUserData() {
-        return new UserData(this.name, this.email, this.userProfile);
-    }
-
     public MemberResponse toMemberResponse() {
         return new MemberResponse(
                 this.userId,
@@ -93,13 +87,5 @@ public class Member {
                 this.role,
                 this.userProfile
         );
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public String getRole() {
-        return role;
     }
 }

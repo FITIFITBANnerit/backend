@@ -1,6 +1,6 @@
 package com.BANnerIt.server.api.banner.domain;
 
-import com.BANnerIt.server.api.user.Member;
+import com.BANnerIt.server.api.user.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
 

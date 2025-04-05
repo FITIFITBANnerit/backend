@@ -1,13 +1,19 @@
 package com.BANnerIt.server.api.user.service;
 
-import com.BANnerIt.server.api.user.Member;
+import com.BANnerIt.server.api.user.domain.Member;
+import com.BANnerIt.server.api.user.dto.AutoLoginResponse;
 import com.BANnerIt.server.api.user.dto.UserData;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
-import com.BANnerIt.server.api.user.service.IdTokenVerify;
+import com.BANnerIt.server.api.user.repository.RefreshTokenRepository;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
+import com.BANnerIt.server.global.auth.RefreshToken;
+import com.BANnerIt.server.global.exception.CustomException;
+import com.BANnerIt.server.global.exception.ErrorCode;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import lombok.RequiredArgsConstructor;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -16,34 +22,92 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class OAuthService {
 
     private final JwtTokenUtil jwtTokenUtil;
     private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final IdTokenVerify idTokenVerify;
+
+    public OAuthService(JwtTokenUtil jwtTokenUtil, MemberRepository memberRepository, RefreshTokenRepository refreshTokenRepository, IdTokenVerify idTokenVerify) {
+        this.jwtTokenUtil = jwtTokenUtil;
+        this.memberRepository = memberRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.idTokenVerify=idTokenVerify;
+    }
 
     public Map<String, Object> authenticateUser(String idToken) throws GeneralSecurityException, IOException {
         GoogleIdToken.Payload payload = idTokenVerify.verifyIdToken(idToken);
+        if (payload == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED, "유효하지 않은 ID 토큰입니다.");
+        }
 
         String email = payload.getEmail();
         String name = (String) payload.get("name");
         String pictureUrl = (String) payload.get("picture");
 
-        log.info("Google OAuth: email = {}", email);
-
         Member member = memberRepository.findByEmail(email)
                 .orElseGet(() -> registerNewUser(email, name, pictureUrl));
 
-        String jwtToken = jwtTokenUtil.generateToken(member.getUserId());
+        String accessToken = jwtTokenUtil.generateAccessToken(member.getUserId());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(member.getUserId());
+
+        refreshTokenRepository.save(new RefreshToken(member.getUserId(), refreshToken));
+
         UserData userData = new UserData(name, email, pictureUrl);
 
         Map<String, Object> response = new HashMap<>();
-        response.put("jwt", jwtToken);
-        response.put("user_data", userData);
+        response.put("accessToken", accessToken);
+        response.put("refreshToken", refreshToken);
+        response.put("userData", userData);
 
         return response;
+    }
+
+    public AutoLoginResponse autoLogin(String accessToken) {
+        try {
+            if (jwtTokenUtil.validateToken(accessToken)) {
+                return getUserDataFromToken(accessToken);
+            }
+        } catch (ExpiredJwtException e) {
+        }
+
+        Long userId = jwtTokenUtil.extractUserIdFromExpiredToken(accessToken);
+        return refreshAccessToken(userId);
+    }
+
+
+    public String extractAccessTokenFromHeader(HttpServletRequest request) {
+        return jwtTokenUtil.resolveToken(request);
+    }
+
+
+    public AutoLoginResponse refreshAccessToken(Long userId) {
+        RefreshToken refreshToken = refreshTokenRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_REFRESH_TOKEN, "RefreshToken을 찾을 수 없습니다."));
+
+        if (!jwtTokenUtil.validateToken(refreshToken.getToken())) {
+            throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN, "RefreshToken이 만료되었습니다.");
+        }
+
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER, "사용자를 찾을 수 없습니다."));
+
+        String newAccessToken = jwtTokenUtil.generateAccessToken(userId);
+        return new AutoLoginResponse(newAccessToken,
+                new UserData(member.getName(), member.getEmail(), member.getUserProfile()));
+
+    }
+
+    private AutoLoginResponse getUserDataFromToken(String token) {
+        Long userId = jwtTokenUtil.extractUserId(token);
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER, "사용자를 찾을 수 없습니다."));
+
+        UserData userData = new UserData(member.getName(), member.getEmail(), member.getUserProfile());
+
+        return new AutoLoginResponse(token, userData);
     }
 
     private Member registerNewUser(String email, String name, String pictureUrl) {
@@ -56,6 +120,11 @@ public class OAuthService {
                 .platformType("google")
                 .role("USER")
                 .build();
-        return memberRepository.save(newUser);
+
+        Member savedUser = memberRepository.save(newUser);
+        String refreshToken = jwtTokenUtil.generateRefreshToken(savedUser.getUserId());
+        refreshTokenRepository.save(new RefreshToken(savedUser.getUserId(), refreshToken));
+
+        return savedUser;
     }
 }
