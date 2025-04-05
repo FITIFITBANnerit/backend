@@ -8,6 +8,9 @@ import com.BANnerIt.server.api.banner.dto.banner.SaveBannerRequest;
 import com.BANnerIt.server.api.banner.dto.banner.UpdateBannerRequest;
 import com.BANnerIt.server.api.banner.repository.BannerRepository;
 import com.BANnerIt.server.api.banner.repository.ReportRepository;
+import com.BANnerIt.server.api.user.Member;
+import com.BANnerIt.server.api.user.repository.MemberRepository;
+import com.BANnerIt.server.global.auth.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +23,10 @@ import java.util.List;
 public class BannerService {
     private final BannerRepository bannerRepository;
     private final ReportRepository reportRepository;
+    private final MemberRepository memberRepository;
+    private final JwtTokenUtil jwtTokenUtil;
 
-
-    //reportstatus 바꾸는거 아직 추가 x, 프론트에 알림가게 하는거 x(알림 갈 때 bannerId도 전송)
+    //reportstatus 바꾸는거 아직 추가 x, 프론트에 알림가게 하는거 x
     //ai에서 분석한 배너가 어떤 reportId인지 확인할 방법 아직 x..(사진id로 확인?,,아마도)
     /*현수막 라벨링 정보 저장*/
     @Transactional
@@ -44,9 +48,15 @@ public class BannerService {
     }
 
     /*현수막 정보 수정*/
-    public void updateBanner(UpdateBannerRequest request){
+    public void updateBanner(String token, UpdateBannerRequest request){
+        Long userId = jwtTokenUtil.extractUserId(token);
+
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         Report report = reportRepository.findById(request.reportId())
                 .orElseThrow(()->new RuntimeException("Report not found"));
+
+        report.setReviewedBy(member);
 
         List<Banner> banners = report.getBanners();
 
@@ -59,5 +69,7 @@ public class BannerService {
             banner.setStatus(bannerInfo.status());
             bannerRepository.save(banner);
         }
+
+        reportRepository.save(report);
     }
 }

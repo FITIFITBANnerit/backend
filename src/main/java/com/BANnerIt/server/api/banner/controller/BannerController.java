@@ -19,11 +19,8 @@ public class BannerController {
 
     /*현수막 라벨링 정보 저장*/
     @PostMapping("/save")
-    public ResponseEntity<ApiResponse> createBanners(@RequestHeader("Authorization") String authorizationHeader,
-                                                     SaveBannerRequest request) {
+    public ResponseEntity<ApiResponse> createBanners(SaveBannerRequest request) {
         try {
-            String token = authorizationHeader.replace("Bearer ", "");
-
             bannerService.saveBanner(request);
 
             return ResponseEntity.ok(ApiResponse.ok(null));
@@ -44,7 +41,7 @@ public class BannerController {
         try {
             String token = authorizationHeader.replace("Bearer ", "");
 
-            bannerService.updateBanner(request);
+            bannerService.updateBanner(token, request);
 
             return ResponseEntity.ok(ApiResponse.ok(null));
         } catch (IllegalArgumentException e) {
