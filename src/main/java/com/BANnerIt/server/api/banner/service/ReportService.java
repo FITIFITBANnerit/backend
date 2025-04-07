@@ -6,7 +6,7 @@ import com.BANnerIt.server.api.banner.domain.ReportStatus;
 import com.BANnerIt.server.api.banner.dto.banner.BannerDetailsWithIdDto;
 import com.BANnerIt.server.api.banner.dto.report.*;
 import com.BANnerIt.server.api.banner.repository.ReportRepository;
-import com.BANnerIt.server.api.user.Member;
+import com.BANnerIt.server.api.user.domain.Member;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

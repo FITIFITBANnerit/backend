@@ -1,6 +1,6 @@
 package com.BANnerIt.server.global.auth;
 
-import com.BANnerIt.server.api.user.Member;
+import com.BANnerIt.server.api.user.domain.Member;
 import com.BANnerIt.server.api.user.service.MemberService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
