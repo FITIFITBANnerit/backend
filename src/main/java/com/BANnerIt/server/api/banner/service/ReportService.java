@@ -28,7 +28,7 @@ public class ReportService {
     /*현수막 신고 저장*/
     @Transactional
     public Long saveReport(String token, SaveReportRequest request){
-        ReportDto reportLog = request.report();
+        ReportDto reportLog = request.report_log();
         LocationDto location = reportLog.location();
         AddressDto address = reportLog.address();
 
