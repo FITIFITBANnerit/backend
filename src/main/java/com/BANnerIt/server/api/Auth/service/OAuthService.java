@@ -1,19 +1,19 @@
-package com.BANnerIt.server.api.user.service;
+package com.BANnerIt.server.api.Auth.service;
 
+import com.BANnerIt.server.api.Auth.verifier.IdTokenVerify;
+import com.BANnerIt.server.api.Auth.domain.RefreshToken;
+import com.BANnerIt.server.api.Auth.repository.RefreshTokenRepository;
+import com.BANnerIt.server.api.Auth.dto.AutoLoginResponse;
 import com.BANnerIt.server.api.user.domain.Member;
-import com.BANnerIt.server.api.user.dto.AutoLoginResponse;
 import com.BANnerIt.server.api.user.dto.UserData;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
-import com.BANnerIt.server.api.user.repository.RefreshTokenRepository;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
-import com.BANnerIt.server.global.auth.RefreshToken;
 import com.BANnerIt.server.global.exception.CustomException;
 import com.BANnerIt.server.global.exception.ErrorCode;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

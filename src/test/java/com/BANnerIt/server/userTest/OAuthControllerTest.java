@@ -1,16 +1,15 @@
 package com.BANnerIt.server.userTest;
 
 
-import com.BANnerIt.server.api.user.dto.AutoLoginResponse;
+import com.BANnerIt.server.api.Auth.dto.AutoLoginResponse;
 import com.BANnerIt.server.api.user.dto.UserData;
-import com.BANnerIt.server.api.user.service.IdTokenVerify;
-import com.BANnerIt.server.api.user.service.OAuthService;
+import com.BANnerIt.server.api.Auth.verifier.IdTokenVerify;
+import com.BANnerIt.server.api.Auth.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -19,7 +18,6 @@ import org.springframework.security.core.context.SecurityContext;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 

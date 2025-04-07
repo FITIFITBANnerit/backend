@@ -1,4 +1,4 @@
-package com.BANnerIt.server.global.auth;
+package com.BANnerIt.server.api.Auth.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

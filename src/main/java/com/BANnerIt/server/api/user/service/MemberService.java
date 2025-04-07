@@ -5,15 +5,19 @@ import com.BANnerIt.server.api.user.dto.MemberResponse;
 import com.BANnerIt.server.api.user.dto.MemberSignUpRequest;
 import com.BANnerIt.server.api.user.dto.MemberUpdateRequest;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
+import com.BANnerIt.server.api.Auth.repository.RefreshTokenRepository;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
     public MemberResponse getUserDetails(Long userId) {
@@ -49,6 +53,7 @@ public class MemberService {
 
         memberRepository.delete(member);
         jwtTokenUtil.addToBlacklist(token);
+        refreshTokenRepository.deleteByUserId(userId);
         return true;
     }
 
@@ -72,8 +77,10 @@ public class MemberService {
         }
 
         jwtTokenUtil.addToBlacklist(token);
+        refreshTokenRepository.deleteByUserId(userId);
         return true;
     }
+
 
     public void signUp(MemberSignUpRequest request) {
         Member newMember = Member.builder()

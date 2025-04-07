@@ -1,17 +1,13 @@
-package com.BANnerIt.server.api.user.controller;
+package com.BANnerIt.server.api.Auth.controller;
 
-import com.BANnerIt.server.api.user.dto.AutoLoginRequest;
-import com.BANnerIt.server.api.user.dto.AutoLoginResponse;
+import com.BANnerIt.server.api.Auth.dto.AutoLoginResponse;
+import com.BANnerIt.server.api.Auth.service.OAuthService;
 import com.BANnerIt.server.api.user.dto.UserData;
-import com.BANnerIt.server.api.user.service.OAuthService;
-import com.BANnerIt.server.global.auth.JwtTokenUtil;
 import com.BANnerIt.server.global.exception.ApiResponse;
 import com.BANnerIt.server.global.exception.CustomException;
 import com.BANnerIt.server.global.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
