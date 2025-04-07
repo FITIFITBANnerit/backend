@@ -38,6 +38,10 @@ dependencies {
 	implementation 'com.google.http-client:google-http-client-jackson2:1.40.1'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
+	implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.0")
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
