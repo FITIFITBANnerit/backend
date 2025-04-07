@@ -1,4 +1,4 @@
-package com.BANnerIt.server.api.user.service;
+package com.BANnerIt.server.api.Auth.verifier;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;

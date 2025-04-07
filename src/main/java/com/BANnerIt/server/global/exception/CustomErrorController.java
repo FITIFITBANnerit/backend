@@ -15,4 +15,5 @@ public class CustomErrorController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body("해당 페이지를 찾을 수 없습니다.");
     }
+
 }
