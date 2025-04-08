@@ -1,4 +1,5 @@
 package com.BANnerIt.server.api.s3.dto;
 
-public record PresignedUrlResponse(String key, String url) {
+import java.util.List;
+public record PresignedUrlResponse(List<PresignedUrlDto> key_urls) {
 }

@@ -14,5 +14,4 @@ public class Image {
     private Long imageId;
 
     private String imageKey;
-    private String url;
 }

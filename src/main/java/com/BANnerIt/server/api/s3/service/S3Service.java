@@ -1,6 +1,7 @@
 package com.BANnerIt.server.api.s3.service;
 
 import com.BANnerIt.server.api.s3.domain.Image;
+import com.BANnerIt.server.api.s3.dto.PresignedUrlDto;
 import com.BANnerIt.server.api.s3.dto.PresignedUrlRequest;
 import com.BANnerIt.server.api.s3.dto.PresignedUrlResponse;
 import com.BANnerIt.server.api.s3.repository.ImageRepository;
@@ -26,18 +27,12 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public List<PresignedUrlResponse> generatePresignedUrls(PresignedUrlRequest request, String folder) {
-        List<PresignedUrlResponse> responseList = new ArrayList<>();
+    public PresignedUrlResponse generatePresignedUrls(PresignedUrlRequest request, String folder) {
+        List<PresignedUrlDto> urls = new ArrayList<>();
 
         for (String file : request.files()) {
             String uuid = UUID.randomUUID().toString();
             String key = folder + "/" + uuid + "." + file;
-
-            Image image = Image.builder()
-                    .imageKey(key)
-                    .build();
-
-            imageRepository.save(image);
 
             Date expiration = Date.from(Instant.now().plusSeconds(60 * 5)); // 5분 유효
 
@@ -47,9 +42,9 @@ public class S3Service {
 
             URL url = amazonS3.generatePresignedUrl(s3UrlRequest);
 
-            responseList.add(new PresignedUrlResponse(key, url.toString()));
+            urls.add(new PresignedUrlDto(key, url.toString()));
         }
 
-        return responseList;
+        return new PresignedUrlResponse(urls);
     }
 }

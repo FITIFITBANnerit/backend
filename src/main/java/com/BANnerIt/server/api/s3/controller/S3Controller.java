@@ -15,7 +15,7 @@ public class S3Controller {
     private final S3Service s3Service;
 
     @PostMapping
-    public List<PresignedUrlResponse> createPresignedUrls(
+    public PresignedUrlResponse createPresignedUrls(
             @RequestBody PresignedUrlRequest request,
             @RequestParam(defaultValue = "report") String folder
     ) {
