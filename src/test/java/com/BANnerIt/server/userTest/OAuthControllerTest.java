@@ -1,10 +1,8 @@
 package com.BANnerIt.server.userTest;
 
-
 import com.BANnerIt.server.api.Auth.dto.AutoLoginResponse;
-import com.BANnerIt.server.api.user.dto.UserData;
-import com.BANnerIt.server.api.Auth.verifier.IdTokenVerify;
 import com.BANnerIt.server.api.Auth.service.OAuthService;
+import com.BANnerIt.server.api.user.dto.UserData;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 
@@ -22,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
@@ -37,24 +37,40 @@ class OAuthControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private IdTokenVerify idTokenVerify;
-
-    @MockitoBean
     private OAuthService oAuthService;
 
     @Test
     void validateTokenTest() throws Exception {
+        // given
         User user = new User("testUser", "", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(user, "", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")))
+                new UsernamePasswordAuthenticationToken(user, "", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")))
         );
         SecurityContextHolder.setContext(securityContext);
 
+        String jwt = "test.jwt.token";
+        UserData userData = new UserData("홍길동", "gildong@email.com", "프로필.jpg");
+
+        Map<String, Object> mockResponse = Map.of(
+                "accessToken", jwt,
+                "userData", userData
+        );
+
+        when(oAuthService.authenticateUser("validToken"))
+                .thenReturn(mockResponse);
+
+        // when & then
         mockMvc.perform(post("/oauth/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"idToken\": \"validToken\"}"))
-                .andExpect(status().isOk());
+                        .content("{\"id_token\": \"validToken\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.jwt").value("test.jwt.token"))
+                .andExpect(jsonPath("$.user_data.name").value("홍길동"))
+                .andExpect(jsonPath("$.user_data.email").value("gildong@email.com"))
+                .andExpect(jsonPath("$.user_data.profile_image_url").value("프로필.jpg"))
+                .andExpect(jsonPath("$.error").doesNotExist());
+
     }
 
     @Test
