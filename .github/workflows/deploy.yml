@@ -20,7 +20,11 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           version: latest
-
+      
+      - name: Build with Gradle
+        run: |
+          ./gradlew build
+          
       - name: Check current directory and files
         run: |
           echo "Current directory:"
