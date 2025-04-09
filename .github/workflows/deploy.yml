@@ -1,5 +1,3 @@
-name: Deploy to EC2 with Docker
-
 on:
   push:
     branches:
@@ -20,7 +18,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           version: latest
-      
+
       - name: Build with Gradle
         run: |
           ./gradlew build
@@ -52,6 +50,9 @@ jobs:
       - name: Save Docker image as tar file
         run: |
           docker save day024/fitifitbannerit:latest -o fitifitbannerit.tar
+
+      - name: Fix file permissions for tar
+        run: chmod 644 fitifitbannerit.tar
 
       - name: Copy Docker image tar to EC2
         uses: appleboy/scp-action@v0.1.7
