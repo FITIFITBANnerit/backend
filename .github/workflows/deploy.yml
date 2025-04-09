@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t day024/fitifitbannerit:latest -f Dockerfile .
+          docker build -t day024/fitifitbannerit:latest -f backend/Dockerfile ./backend
 
       - name: Debug - check image
         run: docker images
@@ -77,8 +77,5 @@ jobs:
             # 기존 컨테이너 중지 및 삭제
             docker ps -a -q --filter "name=fitifitbannerit" | xargs --no-run-if-empty docker stop | xargs --no-run-if-empty docker rm
 
-            # 새로운 컨테이너 실행 (기존 컨테이너를 중지하고 새로운 컨테이너 실행)
+            # 새로운 컨테이너 실행
             docker run -d --name fitifitbannerit -p 8080:8080 day024/fitifitbannerit:latest
-
-            # 확인을 위해 로그 출력 (선택 사항)
-            docker logs fitifitbannerit
