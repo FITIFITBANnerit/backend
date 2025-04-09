@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t myapp:latest .
+          docker build -t myapp:latest -f backend/Dockerfile .
 
       - name: Debug - check image
         run: docker images
