@@ -30,14 +30,24 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t myapp:latest -f Dockerfile .
+          docker build -t day024/fitifitbannerit:latest -f Dockerfile .
 
       - name: Debug - check image
         run: docker images
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push day024/fitifitbannerit:latest
+
       - name: Save Docker image as tar file
         run: |
-          docker save myapp:latest -o myapp.tar
+          docker save day024/fitifitbannerit:latest -o fitifitbannerit.tar
 
       - name: Copy Docker image tar to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -45,7 +55,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          source: "myapp.tar"
+          source: "fitifitbannerit.tar"
           target: "/home/ubuntu/app"
 
       - name: Load Docker image on EC2
@@ -62,10 +72,10 @@ jobs:
             sudo systemctl enable docker
 
             # Docker 이미지 로드
-            docker load -i /home/ubuntu/app/myapp.tar
+            docker load -i /home/ubuntu/app/fitifitbannerit.tar
 
             # 기존 컨테이너 중지 및 삭제
-            docker ps -a -q --filter "name=myapp" | xargs --no-run-if-empty docker stop | xargs --no-run-if-empty docker rm
+            docker ps -a -q --filter "name=fitifitbannerit" | xargs --no-run-if-empty docker stop | xargs --no-run-if-empty docker rm
 
             # 새로운 컨테이너 실행
-            docker run -d --name myapp -p 8080:8080 myapp:latest
+            docker run -d --name fitifitbannerit -p 8080:8080 day024/fitifitbannerit:latest
