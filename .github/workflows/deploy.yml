@@ -31,7 +31,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          source: "build/libs/*.jar"
+          source: "backend/build/libs/*.jar"
           target: "/home/ubuntu/app"
 
       - name: Rename jar to app.jar on EC2
