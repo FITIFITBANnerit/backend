@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t myrepo/fitifitbannerit:latest -f backend/Dockerfile .
+          docker build -t day024/fitifitbannerit:latest -f backend/Dockerfile ./backend
 
       - name: Debug - check image
         run: docker images
