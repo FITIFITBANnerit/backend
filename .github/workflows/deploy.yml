@@ -21,9 +21,16 @@ jobs:
         with:
           version: latest
 
+      - name: Check current directory and files
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "List of files in the directory:"
+          ls -alh
+
       - name: Build Docker image
         run: |
-          docker build -t myapp:latest -f /home/ubuntu/backend/Dockerfile .
+          docker build -t myapp:latest -f backend/Dockerfile .
 
       - name: Debug - check image
         run: docker images
