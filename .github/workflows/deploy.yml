@@ -36,6 +36,22 @@ jobs:
       - name: Push Docker image to Docker Hub
         run: |
           docker push day024/fitifitbannerit:latest
+          
+      # Set up AWS credentials for S3 operations
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2  # 아시아 태평양(서울)
+
+      # S3 업로드 
+      - name: Upload Docker image to S3
+        run: |
+          docker save day024/fitifitbannerit:latest -o fitifitbannerit.tar
+
+          # S3로 Docker 이미지 업로드 
+          aws s3 cp fitifitbannerit.tar s3://bannerit-images/path/to/destination/
 
       # EC2로 Docker Hub에서 이미지를 풀(pull)
       - name: Copy Docker image from Docker Hub to EC2
