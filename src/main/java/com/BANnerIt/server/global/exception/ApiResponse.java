@@ -24,4 +24,5 @@ public record ApiResponse<T>(
     public static <T> ApiResponse<T> fail(final String message, final HttpStatus status) {
         return new ApiResponse<>(null, new ExceptionDto(status.value(), message));
     }
+
 }

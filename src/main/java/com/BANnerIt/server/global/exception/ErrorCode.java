@@ -21,8 +21,10 @@ public enum ErrorCode {
     UNAUTHORIZED(40100, HttpStatus.UNAUTHORIZED, "승인되지 않은 접근입니다."),
     INVALID_TOKEN(40101, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     AUTHENTICATION_FAILED(40102, HttpStatus.UNAUTHORIZED, "올바르지 않은 JWT거나 인증에 실패했습니다."),
-    EXPIRED_REFRESH_TOKEN(40103,HttpStatus.UNAUTHORIZED, "RefreshToken이 만료되었습니다.");
+    EXPIRED_REFRESH_TOKEN(40103,HttpStatus.UNAUTHORIZED, "RefreshToken이 만료되었습니다."),
 
+    // 400 Bad Request
+    INVALID_REQUEST(40000, HttpStatus.BAD_REQUEST, "잘못된 요청입니다.");
 
     private final Integer code;
     private final HttpStatus httpStatus;

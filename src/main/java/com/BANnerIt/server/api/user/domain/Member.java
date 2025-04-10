@@ -82,9 +82,9 @@ public class Member {
     public MemberResponse toMemberResponse() {
         return new MemberResponse(
                 this.userId,
+                this.role,
                 this.email,
                 this.name,
-                this.role,
                 this.userProfile
         );
     }
