@@ -13,11 +13,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService memberService;
     private final JwtTokenUtil jwtTokenUtil;
+
+    public MemberController(MemberService memberService, JwtTokenUtil jwtTokenUtil) {
+        this.memberService = memberService;
+        this.jwtTokenUtil = jwtTokenUtil;
+    }
+
 
     @GetMapping("/userdetail")
     public ResponseEntity<ApiResponse<MemberResponse>> getUserDetails(

@@ -2,7 +2,7 @@ package com.BANnerIt.server.api.Auth.controller;
 
 import com.BANnerIt.server.api.Auth.dto.AutoLoginResponse;
 import com.BANnerIt.server.api.Auth.service.OAuthService;
-import com.BANnerIt.server.api.user.dto.UserData;
+import com.BANnerIt.server.api.Auth.dto.UserData;
 import com.BANnerIt.server.global.exception.ApiResponse;
 import com.BANnerIt.server.global.exception.CustomException;
 import com.BANnerIt.server.global.exception.ErrorCode;
@@ -12,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/oauth")
 public class OAuthController {
@@ -32,7 +34,7 @@ public class OAuthController {
 
             return ResponseEntity
                     .ok()
-                    .header("Authorization", "Bearer " + loginResponse.jwt())
+                    .header("Authorization", "Bearer " + loginResponse.accessToken())
                     .body(ApiResponse.success(loginResponse.userData()));
 
         } catch (IllegalArgumentException e) {
@@ -49,7 +51,7 @@ public class OAuthController {
 
         return ResponseEntity
                 .ok()
-                .header("Authorization", "Bearer " + result.jwt())
+                .header("Authorization", "Bearer " + result.accessToken())
                 .body(ApiResponse.success(result.userData()));
     }
 }
