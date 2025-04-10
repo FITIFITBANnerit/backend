@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -63,7 +62,8 @@ class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user_data").value("회원정보가 수정되었습니다."));
+                .andExpect(jsonPath("$.data").value("회원정보가 수정되었습니다."))
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -76,8 +76,7 @@ class MemberControllerTest {
         mockMvc.perform(delete("/users/delete")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwt").value(nullValue()))
-                .andExpect(jsonPath("$.user_data").value("회원탈퇴가 완료되었습니다."))
+                .andExpect(jsonPath("$.data").value("회원탈퇴가 완료되었습니다."))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
@@ -91,8 +90,7 @@ class MemberControllerTest {
         mockMvc.perform(post("/users/logout")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwt").value(nullValue()))
-                .andExpect(jsonPath("$.user_data").value("로그아웃 완료되었습니다."))
+                .andExpect(jsonPath("$.data").value("로그아웃 완료되었습니다."))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
@@ -104,7 +102,7 @@ class MemberControllerTest {
         final Long userId = 1L;
 
         final MemberResponse response = new MemberResponse(
-                1L, "test@example.com", "테스트 유저", "USER", "프로필 이미지"
+                1L, "USER","test@example.com", "테스트 유저",  "프로필 이미지"
         );
 
         given(memberService.extractUserId(authHeader)).willReturn(userId);
@@ -114,9 +112,9 @@ class MemberControllerTest {
         mockMvc.perform(get("/users/userdetail")
                         .header("Authorization", authHeader))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user_data.email").value("test@example.com"))
-                .andExpect(jsonPath("$.user_data.name").value("테스트 유저"))
-                .andExpect(jsonPath("$.user_data.userProfileUrl").value("프로필 이미지"))
+                .andExpect(jsonPath("$.data.email").value("test@example.com"))
+                .andExpect(jsonPath("$.data.name").value("테스트 유저"))
+                .andExpect(jsonPath("$.data.user_profile_url").value("프로필 이미지"))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 }

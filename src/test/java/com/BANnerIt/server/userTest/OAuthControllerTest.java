@@ -26,8 +26,7 @@ import java.util.Map;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -50,27 +49,21 @@ class OAuthControllerTest {
         SecurityContextHolder.setContext(securityContext);
 
         String jwt = "test.jwt.token";
-        UserData userData = new UserData("홍길동", "gildong@email.com", "프로필.jpg");
-
-        Map<String, Object> mockResponse = Map.of(
-                "accessToken", jwt,
-                "userData", userData
-        );
+        UserData userData = new UserData(1L, "USER", "홍길동", "gildong@email.com", "프로필.jpg");
 
         when(oAuthService.authenticateUser("validToken"))
-                .thenReturn(mockResponse);
+                .thenReturn(new AutoLoginResponse(jwt, userData));
 
         // when & then
         mockMvc.perform(post("/oauth/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"id_token\": \"validToken\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwt").value("test.jwt.token"))
-                .andExpect(jsonPath("$.user_data.name").value("홍길동"))
-                .andExpect(jsonPath("$.user_data.email").value("gildong@email.com"))
-                .andExpect(jsonPath("$.user_data.profile_image_url").value("프로필.jpg"))
+                .andExpect(header().string("Authorization", "Bearer test.jwt.token"))
+                .andExpect(jsonPath("$.data.name").value("홍길동"))
+                .andExpect(jsonPath("$.data.email").value("gildong@email.com"))
+                .andExpect(jsonPath("$.data.profile_image_url").value("프로필.jpg"))
                 .andExpect(jsonPath("$.error").doesNotExist());
-
     }
 
     @Test
@@ -103,7 +96,7 @@ class OAuthControllerTest {
         // given
         String token = "validToken";
         String jwt = "newJwtAccessToken";
-        UserData userData = new UserData( "테스트유저","test@email.com", "프로필 사진");
+        UserData userData = new UserData( 1L,"USER","홍길동","test@email.com", "프로필 사진");
         AutoLoginResponse autoLoginResponse = new AutoLoginResponse(jwt, userData);
 
         when(oAuthService.extractAccessTokenFromHeader(any(HttpServletRequest.class))).thenReturn(token);
@@ -112,10 +105,10 @@ class OAuthControllerTest {
 
         mockMvc.perform(post("/oauth/refresh"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwt").value(jwt))
-                .andExpect(jsonPath("$.user_data.email").value("test@email.com"))
-                .andExpect(jsonPath("$.user_data.name").value("테스트유저"))
-                .andExpect(jsonPath("$.user_data.profile_image_url").value("프로필 사진"))
+                .andExpect(header().string("Authorization", "Bearer newJwtAccessToken"))
+                .andExpect(jsonPath("$.data.email").value("test@email.com"))
+                .andExpect(jsonPath("$.data.name").value("홍길동"))
+                .andExpect(jsonPath("$.data.profile_image_url").value("프로필 사진"))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
