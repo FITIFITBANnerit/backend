@@ -20,10 +20,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiResponse<?>> handleCustomException(CustomException ex) {
-        ExceptionDto exceptionDto = new ExceptionDto(ex.getErrorCode().getHttpStatus().value(), ex.getMessage());
-        ApiResponse<?> response = new ApiResponse<>(null, null, exceptionDto);
-        HttpStatus status = HttpStatus.valueOf(ex.getErrorCode().getHttpStatus().value());
-        return new ResponseEntity<>(response, status);
+        return ResponseEntity
+                .status(ex.getErrorCode().getHttpStatus())
+                .body(ApiResponse.fail(ex));
     }
 
     @ExceptionHandler(ExpiredJwtException.class)
