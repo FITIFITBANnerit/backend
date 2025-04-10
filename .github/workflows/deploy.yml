@@ -22,20 +22,10 @@ jobs:
       - name: Build with Gradle
         run: |
           ./gradlew build
-          
-      - name: Check current directory and files
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "List of files in the directory:"
-          ls -alh
 
       - name: Build Docker image
         run: |
           docker build -t day024/fitifitbannerit:latest -f Dockerfile .
-
-      - name: Debug - check image
-        run: docker images
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -47,23 +37,8 @@ jobs:
         run: |
           docker push day024/fitifitbannerit:latest
 
-      - name: Save Docker image as tar file
-        run: |
-          docker save day024/fitifitbannerit:latest -o fitifitbannerit.tar
-
-      - name: Fix file permissions for tar
-        run: chmod 644 fitifitbannerit.tar
-
-      - name: Copy Docker image tar to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          source: "fitifitbannerit.tar"
-          target: "/home/ubuntu/app"
-
-      - name: Load Docker image on EC2
+      # EC2로 Docker Hub에서 이미지를 풀(pull)
+      - name: Copy Docker image from Docker Hub to EC2
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -76,10 +51,10 @@ jobs:
             sudo systemctl start docker
             sudo systemctl enable docker
 
-            # Docker 이미지 로드
-            docker load -i /home/ubuntu/app/fitifitbannerit.tar
+            # Docker Hub에서 최신 이미지 풀
+            docker pull day024/fitifitbannerit:latest
 
-            # 기존 컨테이너 중지 및 삭제
+            # 기존 컨테이너 중지 및 삭제 (필요시)
             docker ps -a -q --filter "name=fitifitbannerit" | xargs --no-run-if-empty docker stop | xargs --no-run-if-empty docker rm
 
             # 새로운 컨테이너 실행
