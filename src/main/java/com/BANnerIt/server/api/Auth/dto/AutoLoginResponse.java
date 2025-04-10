@@ -1,5 +1,10 @@
 package com.BANnerIt.server.api.Auth.dto;
 
-import com.BANnerIt.server.api.user.dto.UserData;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record AutoLoginResponse(String jwt, UserData userData) {}
+public record AutoLoginResponse(
+        String accessToken,
+
+        @JsonProperty("user_data")
+        UserData userData
+) {}

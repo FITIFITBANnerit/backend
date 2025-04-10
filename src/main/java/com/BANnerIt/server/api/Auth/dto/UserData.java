@@ -1,4 +1,4 @@
-package com.BANnerIt.server.api.user.dto;
+package com.BANnerIt.server.api.Auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
