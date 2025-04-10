@@ -7,6 +7,8 @@ import com.BANnerIt.server.api.user.dto.MemberUpdateRequest;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
 import com.BANnerIt.server.api.Auth.repository.RefreshTokenRepository;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
+import com.BANnerIt.server.global.exception.CustomException;
+import com.BANnerIt.server.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +33,11 @@ public class MemberService {
     }
 
     public boolean updateUser(Long userId, MemberUpdateRequest request) {
-        Member member = memberRepository.findById(userId).orElse(null);
+        if (request.name() == null && request.userProfile() == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        final Member member = memberRepository.findById(userId).orElse(null);
 
         if (member == null) {
             return false;

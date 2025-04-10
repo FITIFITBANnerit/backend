@@ -5,7 +5,7 @@ import com.BANnerIt.server.api.Auth.domain.RefreshToken;
 import com.BANnerIt.server.api.Auth.repository.RefreshTokenRepository;
 import com.BANnerIt.server.api.Auth.dto.AutoLoginResponse;
 import com.BANnerIt.server.api.user.domain.Member;
-import com.BANnerIt.server.api.user.dto.UserData;
+import com.BANnerIt.server.api.Auth.dto.UserData;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
 import com.BANnerIt.server.global.exception.CustomException;
@@ -18,8 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Slf4j

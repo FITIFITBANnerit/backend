@@ -1,11 +1,12 @@
 package com.BANnerIt.server.global.exception;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micrometer.common.lang.Nullable;
 import org.springframework.http.HttpStatus;
 
 public record ApiResponse<T>(
-        @Nullable T data,
-        @Nullable ExceptionDto error
+        @Nullable @JsonProperty("user_data")T data,
+        @Nullable @JsonProperty("error") ExceptionDto error
 ) {
     public static <T> ApiResponse<T> success(@Nullable final T data) {
         return new ApiResponse<>(data, null);
@@ -24,4 +25,5 @@ public record ApiResponse<T>(
     public static <T> ApiResponse<T> fail(final String message, final HttpStatus status) {
         return new ApiResponse<>(null, new ExceptionDto(status.value(), message));
     }
+
 }

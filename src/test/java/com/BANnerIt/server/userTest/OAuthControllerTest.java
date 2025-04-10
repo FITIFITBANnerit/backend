@@ -2,7 +2,7 @@ package com.BANnerIt.server.userTest;
 
 import com.BANnerIt.server.api.Auth.dto.AutoLoginResponse;
 import com.BANnerIt.server.api.Auth.service.OAuthService;
-import com.BANnerIt.server.api.user.dto.UserData;
+import com.BANnerIt.server.api.Auth.dto.UserData;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
-import java.util.Map;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
@@ -60,9 +59,9 @@ class OAuthControllerTest {
                         .content("{\"id_token\": \"validToken\"}"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", "Bearer test.jwt.token"))
-                .andExpect(jsonPath("$.data.name").value("홍길동"))
-                .andExpect(jsonPath("$.data.email").value("gildong@email.com"))
-                .andExpect(jsonPath("$.data.profile_image_url").value("프로필.jpg"))
+                .andExpect(jsonPath("$.user_data.name").value("홍길동"))
+                .andExpect(jsonPath("$.user_data.email").value("gildong@email.com"))
+                .andExpect(jsonPath("$.user_data.profile_image_url").value("프로필.jpg"))
                 .andExpect(jsonPath("$.error").doesNotExist());
     }
 
@@ -106,9 +105,9 @@ class OAuthControllerTest {
         mockMvc.perform(post("/oauth/refresh"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Authorization", "Bearer newJwtAccessToken"))
-                .andExpect(jsonPath("$.data.email").value("test@email.com"))
-                .andExpect(jsonPath("$.data.name").value("홍길동"))
-                .andExpect(jsonPath("$.data.profile_image_url").value("프로필 사진"))
+                .andExpect(jsonPath("$.user_data.email").value("test@email.com"))
+                .andExpect(jsonPath("$.user_data.name").value("홍길동"))
+                .andExpect(jsonPath("$.user_data.profile_image_url").value("프로필 사진"))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 

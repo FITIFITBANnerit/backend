@@ -8,11 +8,10 @@ import com.BANnerIt.server.global.auth.JwtTokenUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -22,14 +21,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 class MemberControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
+
+    @InjectMocks
+    private MemberController memberController;
 
     @Mock
     private MemberService memberService;
@@ -37,10 +38,11 @@ class MemberControllerTest {
     @Mock
     private JwtTokenUtil jwtTokenUtil;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(new MemberController(memberService, jwtTokenUtil)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(memberController).build();
     }
 
     @Test
@@ -50,19 +52,19 @@ class MemberControllerTest {
         final String authHeader = "Bearer " + token;
 
         final MemberUpdateRequest request = new MemberUpdateRequest(
-                "test@example.com", "Updated User", "Updated User", "New Profile", true
-        );
+                "test@example.com", "New Profile");
 
         given(memberService.extractUserId(authHeader)).willReturn(1L);
         given(memberService.updateUser(eq(1L), any(MemberUpdateRequest.class))).willReturn(true);
 
         // when & then
         mockMvc.perform(patch("/users/update")
-                        .header("Authorization", authHeader)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", authHeader))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").value("회원정보가 수정되었습니다."))
+                .andExpect(jsonPath("$.user_data").value("회원정보가 수정되었습니다."))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
@@ -76,7 +78,7 @@ class MemberControllerTest {
         mockMvc.perform(delete("/users/delete")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").value("회원탈퇴가 완료되었습니다."))
+                .andExpect(jsonPath("$.user_data").value("회원탈퇴가 완료되었습니다."))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
@@ -90,7 +92,7 @@ class MemberControllerTest {
         mockMvc.perform(post("/users/logout")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").value("로그아웃 완료되었습니다."))
+                .andExpect(jsonPath("$.user_data").value("로그아웃 완료되었습니다."))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
@@ -102,7 +104,7 @@ class MemberControllerTest {
         final Long userId = 1L;
 
         final MemberResponse response = new MemberResponse(
-                1L, "USER","test@example.com", "테스트 유저",  "프로필 이미지"
+                1L, "USER", "test@example.com", "테스트 유저", "프로필 이미지"
         );
 
         given(memberService.extractUserId(authHeader)).willReturn(userId);
@@ -112,9 +114,9 @@ class MemberControllerTest {
         mockMvc.perform(get("/users/userdetail")
                         .header("Authorization", authHeader))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.email").value("test@example.com"))
-                .andExpect(jsonPath("$.data.name").value("테스트 유저"))
-                .andExpect(jsonPath("$.data.user_profile_url").value("프로필 이미지"))
+                .andExpect(jsonPath("$.user_data.email").value("test@example.com"))
+                .andExpect(jsonPath("$.user_data.name").value("테스트 유저"))
+                .andExpect(jsonPath("$.user_data.user_profile_url").value("프로필 이미지"))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 }
