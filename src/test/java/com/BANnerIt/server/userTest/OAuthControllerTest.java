@@ -1,10 +1,8 @@
 package com.BANnerIt.server.userTest;
 
-
 import com.BANnerIt.server.api.Auth.dto.AutoLoginResponse;
-import com.BANnerIt.server.api.user.dto.UserData;
-import com.BANnerIt.server.api.Auth.verifier.IdTokenVerify;
 import com.BANnerIt.server.api.Auth.service.OAuthService;
+import com.BANnerIt.server.api.Auth.dto.UserData;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 
@@ -26,8 +25,7 @@ import java.util.Collections;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,24 +35,34 @@ class OAuthControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private IdTokenVerify idTokenVerify;
-
-    @MockitoBean
     private OAuthService oAuthService;
 
     @Test
     void validateTokenTest() throws Exception {
+        // given
         User user = new User("testUser", "", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(
-                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(user, "", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")))
+                new UsernamePasswordAuthenticationToken(user, "", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")))
         );
         SecurityContextHolder.setContext(securityContext);
 
+        String jwt = "test.jwt.token";
+        UserData userData = new UserData(1L, "USER", "홍길동", "gildong@email.com", "프로필.jpg");
+
+        when(oAuthService.authenticateUser("validToken"))
+                .thenReturn(new AutoLoginResponse(jwt, userData));
+
+        // when & then
         mockMvc.perform(post("/oauth/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"idToken\": \"validToken\"}"))
-                .andExpect(status().isOk());
+                        .content("{\"id_token\": \"validToken\"}"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Authorization", "Bearer test.jwt.token"))
+                .andExpect(jsonPath("$.user_data.name").value("홍길동"))
+                .andExpect(jsonPath("$.user_data.email").value("gildong@email.com"))
+                .andExpect(jsonPath("$.user_data.profile_image_url").value("프로필.jpg"))
+                .andExpect(jsonPath("$.error").doesNotExist());
     }
 
     @Test
@@ -87,7 +95,7 @@ class OAuthControllerTest {
         // given
         String token = "validToken";
         String jwt = "newJwtAccessToken";
-        UserData userData = new UserData( "테스트유저","test@email.com", "프로필 사진");
+        UserData userData = new UserData( 1L,"USER","홍길동","test@email.com", "프로필 사진");
         AutoLoginResponse autoLoginResponse = new AutoLoginResponse(jwt, userData);
 
         when(oAuthService.extractAccessTokenFromHeader(any(HttpServletRequest.class))).thenReturn(token);
@@ -96,9 +104,9 @@ class OAuthControllerTest {
 
         mockMvc.perform(post("/oauth/refresh"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.jwt").value(jwt))
+                .andExpect(header().string("Authorization", "Bearer newJwtAccessToken"))
                 .andExpect(jsonPath("$.user_data.email").value("test@email.com"))
-                .andExpect(jsonPath("$.user_data.name").value("테스트유저"))
+                .andExpect(jsonPath("$.user_data.name").value("홍길동"))
                 .andExpect(jsonPath("$.user_data.profile_image_url").value("프로필 사진"))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }

@@ -31,9 +31,11 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/users/signup", "/users/login", "/oauth2/**","/oauth/validate","/oauth/refresh").permitAll()
+                        .requestMatchers("/users/signup", "/users/login", "/oauth2/**", "/oauth/validate", "/oauth/refresh").permitAll()
+                        .requestMatchers("/banners/update","/reports/logs").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+
                 .oauth2Login(oauth2 -> oauth2
                         .clientRegistrationRepository(clientRegistrationRepository)
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))

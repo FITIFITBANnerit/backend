@@ -1,10 +1,11 @@
 package com.BANnerIt.server.api.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record MemberResponse(
-        Long userId,
+        Long id,
+        String role,
         String email,
         String name,
-        String role,
-        String userProfileUrl
-) {
-}
+        @JsonProperty("user_profile_url") String userProfileUrl
+) { }

@@ -73,19 +73,23 @@ public class Member {
         if (request.name() != null) {
             this.name = request.name();
         }
+
         if (request.userProfile() != null) {
             this.userProfile = request.userProfile();
         }
+
         this.userModifiedAt = LocalDate.now();
     }
+
 
     public MemberResponse toMemberResponse() {
         return new MemberResponse(
                 this.userId,
+                this.role,
                 this.email,
                 this.name,
-                this.role,
                 this.userProfile
         );
     }
+
 }

@@ -13,74 +13,91 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService memberService;
     private final JwtTokenUtil jwtTokenUtil;
 
+    public MemberController(MemberService memberService, JwtTokenUtil jwtTokenUtil) {
+        this.memberService = memberService;
+        this.jwtTokenUtil = jwtTokenUtil;
+    }
+
+
     @GetMapping("/userdetail")
-    public ResponseEntity<ApiResponse<MemberResponse>> getUserDetails(@RequestHeader("Authorization") String authorizationHeader) {
-        Long userId = memberService.extractUserId(authorizationHeader);
+    public ResponseEntity<ApiResponse<MemberResponse>> getUserDetails(
+            @RequestHeader("Authorization") final String authorizationHeader) {
+
+        final Long userId = memberService.extractUserId(authorizationHeader);
 
         if (userId == null) {
             return ResponseEntity.badRequest().body(ApiResponse.fail(ErrorCode.INVALID_TOKEN));
         }
 
-        MemberResponse userResponse = memberService.getUserDetails(userId);
+        final MemberResponse response = memberService.getUserDetails(userId);
 
-        if (userResponse == null) {
+        if (response == null) {
             return ResponseEntity.status(ErrorCode.NOT_FOUND_MEMBER.getHttpStatus())
                     .body(ApiResponse.fail(ErrorCode.NOT_FOUND_MEMBER));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(null, userResponse));
+        return ResponseEntity.ok()
+                .header("Authorization", authorizationHeader)
+                .body(ApiResponse.success(response));
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<ApiResponse<String>> updateUser(@Valid @RequestBody MemberUpdateRequest request,
-                                                          @RequestHeader("Authorization") String authorizationHeader) {
-        Long userId = memberService.extractUserId(authorizationHeader);
+    public ResponseEntity<ApiResponse<String>> updateUser(
+            @Valid @RequestBody MemberUpdateRequest request,
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        final Long userId = memberService.extractUserId(authorizationHeader);
 
         if (userId == null) {
             return ResponseEntity.badRequest().body(ApiResponse.fail(ErrorCode.INVALID_TOKEN));
         }
 
-        boolean isUpdated = memberService.updateUser(userId, request);
+        final boolean isUpdated = memberService.updateUser(userId, request);
 
         if (!isUpdated) {
             return ResponseEntity.status(ErrorCode.NOT_FOUND_MEMBER.getHttpStatus())
                     .body(ApiResponse.fail(ErrorCode.NOT_FOUND_MEMBER));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(null, "회원정보가 수정되었습니다."));
+        return ResponseEntity.ok()
+                .header("Authorization", authorizationHeader)
+                .body(ApiResponse.success("회원정보가 수정되었습니다."));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<String>> logout(@RequestHeader("Authorization") String authorizationHeader) {
-        String token = authorizationHeader.replace("Bearer ", "");
+    public ResponseEntity<ApiResponse<String>> logout(
+            @RequestHeader("Authorization") String authorizationHeader) {
 
-        boolean isLoggedOut = memberService.logout(token);
+        final String token = authorizationHeader.replace("Bearer ", "");
+
+        final boolean isLoggedOut = memberService.logout(token);
 
         if (!isLoggedOut) {
             return ResponseEntity.status(ErrorCode.NOT_FOUND_MEMBER.getHttpStatus())
                     .body(ApiResponse.fail(ErrorCode.NOT_FOUND_MEMBER));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(null, "로그아웃 완료되었습니다."));
+        return ResponseEntity.ok(ApiResponse.success("로그아웃 완료되었습니다."));
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<ApiResponse<String>> deleteUser(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<ApiResponse<String>> deleteUser(
+            @RequestHeader("Authorization") String authorizationHeader) {
+
         final String token = authorizationHeader.replace("Bearer ", "");
 
-        boolean isDeleted = memberService.deleteMember(token);
+        final boolean isDeleted = memberService.deleteMember(token);
 
         if (!isDeleted) {
             return ResponseEntity.status(ErrorCode.NOT_FOUND_MEMBER.getHttpStatus())
                     .body(ApiResponse.fail(ErrorCode.NOT_FOUND_MEMBER));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(null, "회원탈퇴가 완료되었습니다."));
+        return ResponseEntity.ok(ApiResponse.success("회원탈퇴가 완료되었습니다."));
     }
 }

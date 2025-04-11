@@ -5,7 +5,7 @@ import com.BANnerIt.server.api.Auth.domain.RefreshToken;
 import com.BANnerIt.server.api.Auth.repository.RefreshTokenRepository;
 import com.BANnerIt.server.api.Auth.dto.AutoLoginResponse;
 import com.BANnerIt.server.api.user.domain.Member;
-import com.BANnerIt.server.api.user.dto.UserData;
+import com.BANnerIt.server.api.Auth.dto.UserData;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
 import com.BANnerIt.server.global.exception.CustomException;
@@ -18,8 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -37,7 +35,7 @@ public class OAuthService {
         this.idTokenVerify=idTokenVerify;
     }
 
-    public Map<String, Object> authenticateUser(String idToken) throws GeneralSecurityException, IOException {
+    public AutoLoginResponse authenticateUser(String idToken) throws GeneralSecurityException, IOException {
         GoogleIdToken.Payload payload = idTokenVerify.verifyIdToken(idToken);
         if (payload == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "유효하지 않은 ID 토큰입니다.");
@@ -55,14 +53,15 @@ public class OAuthService {
 
         refreshTokenRepository.save(new RefreshToken(member.getUserId(), refreshToken));
 
-        UserData userData = new UserData(name, email, pictureUrl);
+        UserData userData = new UserData(
+                member.getUserId(),
+                member.getRole(),
+                member.getName(),
+                member.getEmail(),
+                member.getUserProfile()
+        );
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("accessToken", accessToken);
-        response.put("refreshToken", refreshToken);
-        response.put("userData", userData);
-
-        return response;
+        return new AutoLoginResponse(accessToken, userData);
     }
 
     public AutoLoginResponse autoLogin(String accessToken) {
@@ -95,17 +94,31 @@ public class OAuthService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER, "사용자를 찾을 수 없습니다."));
 
         String newAccessToken = jwtTokenUtil.generateAccessToken(userId);
-        return new AutoLoginResponse(newAccessToken,
-                new UserData(member.getName(), member.getEmail(), member.getUserProfile()));
 
+        UserData userData = new UserData(
+                member.getUserId(),
+                member.getRole(),
+                member.getName(),
+                member.getEmail(),
+                member.getUserProfile()
+        );
+
+        return new AutoLoginResponse(newAccessToken, userData);
     }
+
 
     private AutoLoginResponse getUserDataFromToken(String token) {
         Long userId = jwtTokenUtil.extractUserId(token);
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER, "사용자를 찾을 수 없습니다."));
 
-        UserData userData = new UserData(member.getName(), member.getEmail(), member.getUserProfile());
+        UserData userData = new UserData(
+                member.getUserId(),
+                member.getRole(),
+                member.getName(),
+                member.getEmail(),
+                member.getUserProfile()
+        );
 
         return new AutoLoginResponse(token, userData);
     }

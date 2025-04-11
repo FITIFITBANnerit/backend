@@ -1,7 +1,5 @@
 package com.BANnerIt.server.global.exception;
 
-import com.BANnerIt.server.global.exception.ErrorCode;
-
 public class ExceptionDto {
     private final int code;
     private final String message;
