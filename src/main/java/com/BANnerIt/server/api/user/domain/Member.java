@@ -73,11 +73,14 @@ public class Member {
         if (request.name() != null) {
             this.name = request.name();
         }
+
         if (request.userProfile() != null) {
             this.userProfile = request.userProfile();
         }
+
         this.userModifiedAt = LocalDate.now();
     }
+
 
     public MemberResponse toMemberResponse() {
         return new MemberResponse(
@@ -88,4 +91,5 @@ public class Member {
                 this.userProfile
         );
     }
+
 }
