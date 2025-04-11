@@ -38,11 +38,9 @@ public class MemberService {
         if (member == null) {
             return false;
         }
+        member.updateUser(request);
 
-        if (request.name() != null || request.userProfile() != null) {
-            member.updateUser(request);
-            memberRepository.saveAndFlush(member);
-        }
+        memberRepository.saveAndFlush(member);
 
         return true;
     }
