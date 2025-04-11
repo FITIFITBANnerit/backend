@@ -33,20 +33,20 @@ public class MemberService {
     }
 
     public boolean updateUser(Long userId, MemberUpdateRequest request) {
-        if (request.name() == null && request.userProfile() == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
         final Member member = memberRepository.findById(userId).orElse(null);
 
         if (member == null) {
             return false;
         }
 
-        member.updateUser(request);
-        memberRepository.saveAndFlush(member);
+        if (request.name() != null || request.userProfile() != null) {
+            member.updateUser(request);
+            memberRepository.saveAndFlush(member);
+        }
+
         return true;
     }
+
 
     public boolean deleteMember(String token) {
         final Long userId = jwtTokenUtil.extractUserId(token);
