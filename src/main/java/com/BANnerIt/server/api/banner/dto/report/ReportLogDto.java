@@ -8,6 +8,6 @@ import java.util.List;
 
 public record ReportLogDto(Long report_id, LocalDateTime report_time,
                            ReportStatus status, Long created_user_id,
-                           List<String> urls, LocationDto location,
+                           List<String> images, LocationDto location,
                            String content, List<BannerDetailsWithIdDto> banner_info) {
 }

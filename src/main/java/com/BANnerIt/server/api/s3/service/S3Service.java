@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URL;
 import java.time.Instant;
@@ -27,18 +28,13 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    @Transactional
     public List<PresignedUrlResponse> generatePresignedUrls(PresignedUrlRequest request, String folder) {
         List<PresignedUrlResponse> responseList = new ArrayList<>();
 
         for (String file : request.files()) {
             String uuid = UUID.randomUUID().toString();
             String key = folder + "/" + uuid + "." + file;
-
-            Image image = Image.builder()
-                    .imageKey(key)
-                    .build();
-
-            imageRepository.save(image);
 
             Date expiration = Date.from(Instant.now().plusSeconds(60 * 5)); // 5분 유효
 
@@ -54,6 +50,7 @@ public class S3Service {
         return responseList;
     }
 
+    @Transactional
     public List<String> generateS3Urls(List<String> keys) {
         String baseUrl = "https://bannerit-images.s3.ap-northeast-2.amazonaws.com/report/";
 

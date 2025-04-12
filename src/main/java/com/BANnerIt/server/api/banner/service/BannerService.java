@@ -28,8 +28,9 @@ public class BannerService {
     private final MemberRepository memberRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
-    //reportstatus 바꾸는거 아직 추가 x, 프론트에 알림가게 하는거 x
+    //프론트에 알림가게 하는거 x
     /*현수막 라벨링 정보 저장*/
+    @Transactional
     public void saveBanner(SaveBannerRequest request) {
         log.info("saveBanner 시작 - report_id: {}, banner_list 크기: {}",
                 request.report_id(),
@@ -41,6 +42,7 @@ public class BannerService {
                     return new RuntimeException("Report not found");
                 });
 
+        assert request.banner_list() != null;
         for (BannerDetailsDto bannerDetails : request.banner_list()) {
             try {
                 log.debug("Banner 저장 시도: {}", bannerDetails);
@@ -54,9 +56,6 @@ public class BannerService {
                         .build();
 
                 bannerRepository.save(banner);
-
-                report.setStatus(ReportStatus.COMPLETED);
-                reportRepository.save(report);
                 log.debug("Banner 저장 성공: {}", banner);
 
             } catch (Exception e) {
@@ -66,9 +65,12 @@ public class BannerService {
         }
 
         log.info("saveBanner 완료 - report_id: {}", request.report_id());
+        report.setStatus(ReportStatus.COMPLETED);
+        reportRepository.save(report);
     }
 
     /*현수막 정보 수정*/
+    @Transactional
     public void updateBanner(String token, UpdateBannerRequest request){
         Long userId = jwtTokenUtil.extractUserId(token);
 
