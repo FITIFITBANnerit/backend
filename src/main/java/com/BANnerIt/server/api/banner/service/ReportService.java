@@ -117,7 +117,7 @@ public class ReportService {
         List<String> urls = r.getImages().stream()
                 .map(Image::getImageKey)
                 .collect(Collectors.toList());
-        List<String> images = s3Service.generateS3Urls(urls);
+        List<String> images = s3Service.generateGetPresignedUrls(urls);
 
         return new ReportLogDto(r.getReportId(), r.getCreatedAt(),
                 r.getStatus(), r.getCreatedBy().getUserId(), images, location, r.getContent(), banners);

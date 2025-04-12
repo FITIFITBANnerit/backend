@@ -28,13 +28,12 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    @Transactional
-    public List<PresignedUrlResponse> generatePresignedUrls(PresignedUrlRequest request, String folder) {
+    public List<PresignedUrlResponse> generatePutPresignedUrls(PresignedUrlRequest request, String folder) {
         List<PresignedUrlResponse> responseList = new ArrayList<>();
 
         for (String file : request.files()) {
             String uuid = UUID.randomUUID().toString();
-            String key = folder + "/" + uuid + "." + file;
+            String key = folder + "/" + uuid + "_" + file;
 
             Date expiration = Date.from(Instant.now().plusSeconds(60 * 5)); // 5분 유효
 
@@ -50,13 +49,24 @@ public class S3Service {
         return responseList;
     }
 
-    @Transactional
-    public List<String> generateS3Urls(List<String> keys) {
-        String baseUrl = "https://bannerit-images.s3.ap-northeast-2.amazonaws.com/report/";
+    public List<String> generateGetPresignedUrls(List<String> keys) {
+        List<String> responseList = new ArrayList<>();
 
-        return keys.stream()
-                    .map(key -> baseUrl + key)
-                    .collect(Collectors.toList());
+        for (String file : keys) {
+
+            Date expiration = Date.from(Instant.now().plusSeconds(60 * 60)); // 1시간 유효
+
+            GeneratePresignedUrlRequest s3UrlRequest =
+                    new GeneratePresignedUrlRequest(bucket, file)
+                            .withMethod(com.amazonaws.HttpMethod.GET)
+                            .withExpiration(expiration);
+
+            URL url = amazonS3.generatePresignedUrl(s3UrlRequest);
+
+            responseList.add(url.toString());
+        }
+
+        return responseList;
     }
 
 }
