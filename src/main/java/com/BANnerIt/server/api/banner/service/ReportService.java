@@ -120,10 +120,9 @@ public class ReportService {
                 .collect(Collectors.toList());
         List<String> images = s3Service.generateGetPresignedUrls(urls);
 
-        // 삭제된 회원의 reports getCreatedBy = 0으로설정
         Long createdById = Optional.ofNullable(r.getCreatedBy())
                 .map(Member::getUserId)
-                .orElse(0L);
+                .orElse(null);
 
         return new ReportLogDto(r.getReportId(), r.getCreatedAt(),
                 r.getStatus(), createdById, images, location, r.getContent(), banners);
