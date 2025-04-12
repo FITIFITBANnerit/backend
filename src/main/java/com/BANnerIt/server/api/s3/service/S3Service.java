@@ -1,7 +1,6 @@
 package com.BANnerIt.server.api.s3.service;
 
 import com.BANnerIt.server.api.s3.domain.Image;
-import com.BANnerIt.server.api.s3.dto.PresignedUrlDto;
 import com.BANnerIt.server.api.s3.dto.PresignedUrlRequest;
 import com.BANnerIt.server.api.s3.dto.PresignedUrlResponse;
 import com.BANnerIt.server.api.s3.repository.ImageRepository;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,12 +27,18 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public PresignedUrlResponse generatePresignedUrls(PresignedUrlRequest request, String folder) {
-        List<PresignedUrlDto> urls = new ArrayList<>();
+    public List<PresignedUrlResponse> generatePresignedUrls(PresignedUrlRequest request, String folder) {
+        List<PresignedUrlResponse> responseList = new ArrayList<>();
 
         for (String file : request.files()) {
             String uuid = UUID.randomUUID().toString();
             String key = folder + "/" + uuid + "." + file;
+
+            Image image = Image.builder()
+                    .imageKey(key)
+                    .build();
+
+            imageRepository.save(image);
 
             Date expiration = Date.from(Instant.now().plusSeconds(60 * 5)); // 5분 유효
 
@@ -42,9 +48,18 @@ public class S3Service {
 
             URL url = amazonS3.generatePresignedUrl(s3UrlRequest);
 
-            urls.add(new PresignedUrlDto(key, url.toString()));
+            responseList.add(new PresignedUrlResponse(key, url.toString()));
         }
 
-        return new PresignedUrlResponse(urls);
+        return responseList;
     }
+
+    public List<String> generateS3Urls(List<String> keys) {
+        String baseUrl = "https://bannerit-images.s3.ap-northeast-2.amazonaws.com/report/";
+
+        return keys.stream()
+                    .map(key -> baseUrl + key)
+                    .collect(Collectors.toList());
+    }
+
 }

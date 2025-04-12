@@ -1,5 +1,6 @@
 package com.BANnerIt.server.api.banner.domain;
 
+import com.BANnerIt.server.api.s3.domain.Image;
 import com.BANnerIt.server.api.user.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,6 +42,9 @@ public class Report {
     @JoinColumn(name = "created_by")
     private Member createdBy;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "report")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "report", cascade = CascadeType.ALL)
     private List<Banner> banners;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "report", cascade = CascadeType.ALL)
+    private List<Image> images;
 }

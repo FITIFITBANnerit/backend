@@ -2,6 +2,7 @@ package com.BANnerIt.server.api.banner.service;
 
 import com.BANnerIt.server.api.banner.domain.Banner;
 import com.BANnerIt.server.api.banner.domain.Report;
+import com.BANnerIt.server.api.banner.domain.ReportStatus;
 import com.BANnerIt.server.api.banner.dto.banner.BannerDetailsDto;
 import com.BANnerIt.server.api.banner.dto.banner.BannerInfoDto;
 import com.BANnerIt.server.api.banner.dto.banner.SaveBannerRequest;
@@ -53,6 +54,9 @@ public class BannerService {
                         .build();
 
                 bannerRepository.save(banner);
+
+                report.setStatus(ReportStatus.COMPLETED);
+                reportRepository.save(report);
                 log.debug("Banner 저장 성공: {}", banner);
 
             } catch (Exception e) {
@@ -86,7 +90,10 @@ public class BannerService {
             banner.setStatus(bannerInfo.status());
             bannerRepository.save(banner);
         }
+        report.setStatus(ReportStatus.ADMIN_CONFIRMED);
 
         reportRepository.save(report);
     }
+
+
 }

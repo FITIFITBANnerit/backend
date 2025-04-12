@@ -6,6 +6,9 @@ import com.BANnerIt.server.api.banner.domain.ReportStatus;
 import com.BANnerIt.server.api.banner.dto.banner.BannerDetailsWithIdDto;
 import com.BANnerIt.server.api.banner.dto.report.*;
 import com.BANnerIt.server.api.banner.repository.ReportRepository;
+import com.BANnerIt.server.api.s3.domain.Image;
+import com.BANnerIt.server.api.s3.repository.ImageRepository;
+import com.BANnerIt.server.api.s3.service.S3Service;
 import com.BANnerIt.server.api.user.domain.Member;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 public class ReportService {
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
+    private final S3Service s3Service;
     private final JwtTokenUtil jwtTokenUtil;
 
     //사진 저장 아직 안함
@@ -50,6 +54,14 @@ public class ReportService {
                 .build();
 
         reportRepository.save(report);
+
+        for(String key: request.report_log().image_keys()){
+            Image image = Image.builder()
+                    .imageKey(key)
+                    .report(report)
+                    .build();
+        }
+
         return report.getReportId();
     }
 
@@ -60,7 +72,7 @@ public class ReportService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return member.getCreatedReports().stream()
-                .map(ReportService::getReportLogDto)
+                .map(this::getReportLogDto)
                 .toList();
     }
 
@@ -69,17 +81,21 @@ public class ReportService {
         List<Report> reports = reportRepository.findAll();
 
         return reports.stream()
-                .map(ReportService::getReportLogDto)
+                .map(this::getReportLogDto)
                 .collect(Collectors.toList());
     }
 
     // 신고 기록을 ReportLogDto로 변환
-    private static ReportLogDto getReportLogDto(Report r) {
+    private ReportLogDto getReportLogDto(Report r) {
         LocationDto location = new LocationDto(r.getLatitude(), r.getLongitude());
         List<BannerDetailsWithIdDto> banners = convertBannersToDto(r.getBanners());
+        List<String> urls = r.getImages().stream()
+                .map(Image::getImageKey)
+                .collect(Collectors.toList());
+        List<String> images = s3Service.generateS3Urls(urls);
 
         return new ReportLogDto(r.getReportId(), r.getCreatedAt(),
-                r.getStatus(), location, r.getContent(), banners);
+                r.getStatus(), r.getCreatedBy().getUserId(), images, location, r.getContent(), banners);
     }
 
     // 배너 리스트를 DTO로 변환
