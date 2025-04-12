@@ -5,7 +5,7 @@ import com.BANnerIt.server.api.user.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,10 +23,9 @@ public class Report {
     @Enumerated(EnumType.STRING)
     private ReportStatus status;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime updatedAt;
     private String content;
-    private String bannerUrl;
 
     private String address1;
     private String address2;
