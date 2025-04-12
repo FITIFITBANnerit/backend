@@ -39,7 +39,7 @@ public class Report {
     private Member reviewedBy;
 
     @ManyToOne
-    @JoinColumn(name = "created_by")
+    @JoinColumn(name = "created_by", nullable = true)
     private Member createdBy;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "report", cascade = CascadeType.ALL)
