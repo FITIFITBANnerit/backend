@@ -25,7 +25,7 @@ public class S3Controller {
             @RequestParam(defaultValue = "report") String folder
     ) {
         try{
-            return ApiResponseUtil.ok("key_urls", s3Service.generatePresignedUrls(request, folder));
+            return ApiResponseUtil.ok("key_urls", s3Service.generatePutPresignedUrls(request, folder));
         }catch (IllegalArgumentException e) {
             // 잘못된 Authorization 헤더 또는 토큰 오류 처리
             return ApiResponseUtil.fail("올바르지 않은 JWT입니다", HttpStatus.UNAUTHORIZED);
