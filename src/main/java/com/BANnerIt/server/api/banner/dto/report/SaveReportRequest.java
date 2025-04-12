@@ -1,4 +1,4 @@
 package com.BANnerIt.server.api.banner.dto.report;
 
-public record SaveReportRequest(ReportDto report) {
+public record SaveReportRequest(ReportDto report_log) {
 }

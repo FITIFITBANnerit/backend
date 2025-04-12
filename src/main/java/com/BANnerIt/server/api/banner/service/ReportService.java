@@ -6,10 +6,14 @@ import com.BANnerIt.server.api.banner.domain.ReportStatus;
 import com.BANnerIt.server.api.banner.dto.banner.BannerDetailsWithIdDto;
 import com.BANnerIt.server.api.banner.dto.report.*;
 import com.BANnerIt.server.api.banner.repository.ReportRepository;
+import com.BANnerIt.server.api.s3.domain.Image;
+import com.BANnerIt.server.api.s3.repository.ImageRepository;
+import com.BANnerIt.server.api.s3.service.S3Service;
 import com.BANnerIt.server.api.user.domain.Member;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
 import com.BANnerIt.server.global.auth.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,68 +22,106 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ReportService {
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
+    private final S3Service s3Service;
     private final JwtTokenUtil jwtTokenUtil;
 
     //사진 저장 아직 안함
     /*현수막 신고 저장*/
     @Transactional
-    public Long saveReport(String token, SaveReportRequest request){
-        ReportDto reportLog = request.report();
-        LocationDto location = reportLog.location();
-        AddressDto address = reportLog.address();
+    public Long saveReport(String token, SaveReportRequest request) {
+        log.info("saveReport() called with token: {}", token);
 
-        Long userId = jwtTokenUtil.extractUserId(token);
-        Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            ReportDto reportLog = request.report_log();
+            log.debug("Extracted report_log: {}", reportLog);
 
-        Report report = Report.builder()
-                .content(reportLog.content())
-                .latitude(location.latitude())
-                .longitude(location.longitude())
-                .address1(address.address1())
-                .address2(address.address2())
-                .address3(address.address3())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .status(ReportStatus.RECEIVED)
-                .createdBy(member)
-                .build();
+            LocationDto location = reportLog.location();
+            AddressDto address = reportLog.address();
 
-        reportRepository.save(report);
-        return report.getReportId();
+            log.debug("Location: latitude={}, longitude={}", location.latitude(), location.longitude());
+            log.debug("Address: {}, {}, {}", address.address1(), address.address2(), address.address3());
+
+            Long userId = jwtTokenUtil.extractUserId(token);
+            log.info("Extracted userId from token: {}", userId);
+
+            Member member = memberRepository.findById(userId)
+                    .orElseThrow(() -> {
+                        log.error("User not found for userId: {}", userId);
+                        return new RuntimeException("User not found");
+                    });
+
+            Report report = Report.builder()
+                    .content(reportLog.content())
+                    .latitude(location.latitude())
+                    .longitude(location.longitude())
+                    .address1(address.address1())
+                    .address2(address.address2())
+                    .address3(address.address3())
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .status(ReportStatus.RECEIVED)
+                    .createdBy(member)
+                    .build();
+
+            reportRepository.save(report);
+            log.info("Report saved. ID: {}", report.getReportId());
+
+            for (String key : reportLog.image_keys()) {
+                Image image = Image.builder()
+                        .imageKey(key)
+                        .report(report)
+                        .build();
+
+                report.getImages().add(image);
+                log.debug("Image added to report: {}", key);
+            }
+
+            return report.getReportId();
+
+        } catch (Exception e) {
+            log.error("Error in saveReport: {}", e.getMessage(), e);
+            throw e;  // 다시 던져서 컨트롤러에서 처리되도록 함
+        }
     }
 
     /*사용자의 현수막 신고기록 조회*/
+    @Transactional
     public List<ReportLogDto> getUserReportLogs(String token){
         Long userId = jwtTokenUtil.extractUserId(token);
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return member.getCreatedReports().stream()
-                .map(ReportService::getReportLogDto)
+                .map(this::getReportLogDto)
                 .toList();
     }
 
     /*전체 현수막 신고기록 조회*/
+    @Transactional
     public List<ReportLogDto> getAllReportLogs() {
         List<Report> reports = reportRepository.findAll();
 
         return reports.stream()
-                .map(ReportService::getReportLogDto)
+                .map(this::getReportLogDto)
                 .collect(Collectors.toList());
     }
 
     // 신고 기록을 ReportLogDto로 변환
-    private static ReportLogDto getReportLogDto(Report r) {
+    private ReportLogDto getReportLogDto(Report r) {
         LocationDto location = new LocationDto(r.getLatitude(), r.getLongitude());
         List<BannerDetailsWithIdDto> banners = convertBannersToDto(r.getBanners());
+        List<String> urls = r.getImages().stream()
+                .map(Image::getImageKey)
+                .collect(Collectors.toList());
+        List<String> images = s3Service.generateS3Urls(urls);
 
         return new ReportLogDto(r.getReportId(), r.getCreatedAt(),
-                r.getStatus(), location, r.getContent(), banners);
+                r.getStatus(), r.getCreatedBy().getUserId(), images, location, r.getContent(), banners);
     }
 
     // 배너 리스트를 DTO로 변환

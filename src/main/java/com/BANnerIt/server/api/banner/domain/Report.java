@@ -1,10 +1,12 @@
 package com.BANnerIt.server.api.banner.domain;
 
+import com.BANnerIt.server.api.s3.domain.Image;
 import com.BANnerIt.server.api.user.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -41,6 +43,10 @@ public class Report {
     @JoinColumn(name = "created_by")
     private Member createdBy;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "report")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "report", cascade = CascadeType.ALL)
     private List<Banner> banners;
+
+    @Builder.Default
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images = new ArrayList<>();
 }
