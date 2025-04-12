@@ -40,6 +40,7 @@ public class S3Service {
             GeneratePresignedUrlRequest s3UrlRequest = new GeneratePresignedUrlRequest(bucket, key)
                     .withMethod(com.amazonaws.HttpMethod.PUT)
                     .withExpiration(expiration);
+            s3UrlRequest.addRequestParameter("Content-Type", "image/jpeg");
 
             URL url = amazonS3.generatePresignedUrl(s3UrlRequest);
 
