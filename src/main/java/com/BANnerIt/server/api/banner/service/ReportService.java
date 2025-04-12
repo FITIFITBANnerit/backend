@@ -7,7 +7,6 @@ import com.BANnerIt.server.api.banner.dto.banner.BannerDetailsWithIdDto;
 import com.BANnerIt.server.api.banner.dto.report.*;
 import com.BANnerIt.server.api.banner.repository.ReportRepository;
 import com.BANnerIt.server.api.s3.domain.Image;
-import com.BANnerIt.server.api.s3.repository.ImageRepository;
 import com.BANnerIt.server.api.s3.service.S3Service;
 import com.BANnerIt.server.api.user.domain.Member;
 import com.BANnerIt.server.api.user.repository.MemberRepository;
@@ -17,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,8 +61,8 @@ public class ReportService {
                     .address1(address.address1())
                     .address2(address.address2())
                     .address3(address.address3())
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
+                    .createdAt(ZonedDateTime.now())
+                    .updatedAt(ZonedDateTime.now())
                     .status(ReportStatus.RECEIVED)
                     .createdBy(member)
                     .build();
