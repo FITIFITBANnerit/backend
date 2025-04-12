@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(customAuthenticationEntryPoint))
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/users/signup", "/users/login", "/oauth2/**", "/oauth/validate", "/oauth/refresh").permitAll()
-                        .requestMatchers("/banners/update","/reports/logs").hasRole("ADMIN")
+                        .requestMatchers("/banners/update").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 
