@@ -35,7 +35,7 @@ public class BannerController {
     }
 
     /*현수막 정보 수정*/
-    @PutMapping("/update")
+    @PatchMapping("/update")
     public ResponseEntity<?> updateBanners(@RequestHeader("Authorization") String authorizationHeader,
                                                      @RequestBody UpdateBannerRequest request) {
         try {
