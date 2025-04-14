@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -119,8 +120,12 @@ public class ReportService {
                 .collect(Collectors.toList());
         List<String> images = s3Service.generateGetPresignedUrls(urls);
 
+        Long createdById = Optional.ofNullable(r.getCreatedBy())
+                .map(Member::getUserId)
+                .orElse(null);
+
         return new ReportLogDto(r.getReportId(), r.getCreatedAt(),
-                r.getStatus(), r.getCreatedBy().getUserId(), images, location, r.getContent(), banners);
+                r.getStatus(), createdById, images, location, r.getContent(), banners);
     }
 
     // 배너 리스트를 DTO로 변환
