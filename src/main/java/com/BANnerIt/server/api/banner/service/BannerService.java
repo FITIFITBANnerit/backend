@@ -73,30 +73,51 @@ public class BannerService {
     /*현수막 정보 수정*/
     @Transactional
     public void updateBanner(String token, UpdateBannerRequest request){
+        log.info("[updateBanner] 호출됨 - token: {}, request: {}", token, request);
+
         Long userId = jwtTokenUtil.extractUserId(token);
+        log.info("[updateBanner] 추출된 userId: {}", userId);
 
         Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> {
+                    log.error("[updateBanner] userId: {} 에 해당하는 사용자 없음", userId);
+                    return new RuntimeException("User not found");
+                });
+        log.info("[updateBanner] 사용자 조회 완료 - member: {}", member);
+
         Report report = reportRepository.findById(request.report_id())
-                .orElseThrow(()->new RuntimeException("Report not found"));
+                .orElseThrow(() -> {
+                    log.error("[updateBanner] reportId: {} 에 해당하는 보고서 없음", request.report_id());
+                    return new RuntimeException("Report not found");
+                });
+        log.info("[updateBanner] 보고서 조회 완료 - reportId: {}", request.report_id());
 
         report.setReviewedBy(member);
 
         List<Banner> banners = report.getBanners();
+        log.info("[updateBanner] 해당 보고서의 현수막 수: {}", banners.size());
 
         for(BannerInfoDto bannerInfo : request.banner_info()){
-            Banner banner = banners.stream()
-                    .filter(b -> b.getBannerId().equals(bannerInfo.banner_id())) // bannerId가 일치하는 현수막 찾기
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Banner not found"));
+            log.info("[updateBanner] 처리 중인 bannerInfo: {}", bannerInfo);
 
+            Banner banner = banners.stream()
+                    .filter(b -> b.getBannerId().equals(bannerInfo.banner_id()))
+                    .findFirst()
+                    .orElseThrow(() -> {
+                        log.error("[updateBanner] bannerId: {} 에 해당하는 현수막 없음", bannerInfo.banner_id());
+                        return new RuntimeException("Banner not found");
+                    });
+
+            log.info("[updateBanner] 현수막 조회 완료 - bannerId: {}, 이전 상태: {}", banner.getBannerId(), banner.getStatus());
             banner.setStatus(bannerInfo.status());
             bannerRepository.save(banner);
+            log.info("[updateBanner] 현수막 상태 업데이트 완료 - bannerId: {}, 새로운 상태: {}", banner.getBannerId(), banner.getStatus());
         }
+
         report.setStatus(ReportStatus.ADMIN_CONFIRMED);
         report.setUpdatedAt(ZonedDateTime.now());
-
         reportRepository.save(report);
+        log.info("[updateBanner] 보고서 상태 및 시간 업데이트 완료 - reportId: {}, status: {}", report.getReportId(), report.getStatus());
     }
 
 
