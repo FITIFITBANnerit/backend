@@ -27,10 +27,10 @@ import java.util.stream.Collectors;
 public class ReportService {
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
+    private final AiClinetService aiClinetService;
     private final S3Service s3Service;
     private final JwtTokenUtil jwtTokenUtil;
 
-    //사진 저장 아직 안함
     /*현수막 신고 저장*/
     @Transactional
     public Long saveReport(String token, SaveReportRequest request) {
@@ -81,11 +81,14 @@ public class ReportService {
                 log.debug("Image added to report: {}", key);
             }
 
+            //ai 서버로 이미지 url 전송
+            aiClinetService.sendImageUrlsToAiServer(report.getReportId(), request.report_log().image_keys());
+
             return report.getReportId();
 
         } catch (Exception e) {
             log.error("Error in saveReport: {}", e.getMessage(), e);
-            throw e;  // 다시 던져서 컨트롤러에서 처리되도록 함
+            throw e;
         }
     }
 

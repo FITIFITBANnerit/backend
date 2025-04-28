@@ -2,6 +2,7 @@ package com.BANnerIt.server.api.banner.domain;
 
 import com.BANnerIt.server.api.s3.domain.Image;
 import com.BANnerIt.server.api.user.domain.Member;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,7 +24,9 @@ public class Report {
     @Enumerated(EnumType.STRING)
     private ReportStatus status;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssX")
     private ZonedDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssX")
     private ZonedDateTime updatedAt;
     private String content;
 
