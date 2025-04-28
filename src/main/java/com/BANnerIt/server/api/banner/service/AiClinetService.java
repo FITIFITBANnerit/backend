@@ -27,7 +27,7 @@ public class AiClinetService {
     public void sendImageUrlsToAiServer(Long reportId, List<String> imageKeys) {
         log.info("📤 sendImageUrlsToAiServer() called with reportId: {}, imageKeys: {}", reportId, imageKeys);
 
-        String sendUrl = aiServerUrl + "images";
+        String sendUrl = aiServerUrl + "analyze";
         try {
             log.debug("🧾 Generating presigned URLs from S3 keys...");
             List<String> imageUrls = s3Service.generateGetPresignedUrls(imageKeys);
