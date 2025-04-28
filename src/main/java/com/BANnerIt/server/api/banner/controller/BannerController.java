@@ -18,22 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class BannerController {
     private final BannerService bannerService;
 
-    /*현수막 라벨링 정보 저장*/
-    @PostMapping("/save")
-    public ResponseEntity<?> createBanners(@RequestBody SaveBannerRequest request) {
-        try {
-            bannerService.saveBanner(request);
-
-            return ApiResponseUtil.ok("error", null);
-        } catch (IllegalArgumentException e) {
-            // 잘못된 Authorization 헤더 또는 토큰 오류 처리
-            return ApiResponseUtil.fail("올바르지 않은 JWT입니다", HttpStatus.UNAUTHORIZED);
-        }catch (Exception e) {
-            // 그 외 예외 처리
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다.");
-        }
-    }
-
     /*현수막 정보 수정*/
     @PatchMapping("/update")
     public ResponseEntity<?> updateBanners(@RequestHeader("Authorization") String authorizationHeader,

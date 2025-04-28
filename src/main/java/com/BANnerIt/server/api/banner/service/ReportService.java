@@ -3,7 +3,9 @@ package com.BANnerIt.server.api.banner.service;
 import com.BANnerIt.server.api.banner.domain.Banner;
 import com.BANnerIt.server.api.banner.domain.Report;
 import com.BANnerIt.server.api.banner.domain.ReportStatus;
+import com.BANnerIt.server.api.banner.dto.banner.BannerDetailsDto;
 import com.BANnerIt.server.api.banner.dto.banner.BannerDetailsWithIdDto;
+import com.BANnerIt.server.api.banner.dto.banner.SaveBannerRequest;
 import com.BANnerIt.server.api.banner.dto.report.*;
 import com.BANnerIt.server.api.banner.repository.ReportRepository;
 import com.BANnerIt.server.api.s3.domain.Image;
@@ -15,10 +17,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.concurrent.ExecutionException;
+
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +35,7 @@ public class ReportService {
     private final MemberRepository memberRepository;
     private final AiClinetService aiClinetService;
     private final S3Service s3Service;
+    private final BannerService bannerService;
     private final JwtTokenUtil jwtTokenUtil;
 
     /*현수막 신고 저장*/
@@ -81,8 +88,23 @@ public class ReportService {
                 log.debug("Image added to report: {}", key);
             }
 
-            //ai 서버로 이미지 url 전송
-            aiClinetService.sendImageUrlsToAiServer(report.getReportId(), request.report_log().image_keys());
+            // AI 서버로 이미지 URL 전송 (비동기)
+            CompletableFuture<SaveBannerRequest> future = aiClinetService.sendImageUrlsToAiServer(report.getReportId(), request.report_log().image_keys());
+
+            try {
+                // AI 응답을 기다리고 (blocking call)
+                SaveBannerRequest saveBannerRequest = future.get();  // 여기서 blocking이 발생함
+
+                // 배너 저장
+                if (saveBannerRequest != null && saveBannerRequest.banner_list() != null && !saveBannerRequest.banner_list().isEmpty()) {
+                    bannerService.saveBanner(saveBannerRequest);  // 배너 저장 함수 호출
+                }
+            }catch (InterruptedException e) {
+                log.error("AI 서버 응답 대기 중 인터럽트 발생: {}", e.getMessage(), e);
+                Thread.currentThread().interrupt();  // 스레드 상태 복원
+            } catch (ExecutionException e) {
+                log.error("AI 서버 응답 처리 중 오류 발생: {}", e.getMessage(), e);
+            }
 
             return report.getReportId();
 
