@@ -3,9 +3,7 @@ package com.BANnerIt.server.api.banner.service;
 import com.BANnerIt.server.api.banner.domain.Banner;
 import com.BANnerIt.server.api.banner.domain.Report;
 import com.BANnerIt.server.api.banner.domain.ReportStatus;
-import com.BANnerIt.server.api.banner.dto.banner.BannerDetailsDto;
 import com.BANnerIt.server.api.banner.dto.banner.BannerDetailsWithIdDto;
-import com.BANnerIt.server.api.banner.dto.banner.SaveBannerRequest;
 import com.BANnerIt.server.api.banner.dto.report.*;
 import com.BANnerIt.server.api.banner.repository.ReportRepository;
 import com.BANnerIt.server.api.s3.domain.Image;
@@ -17,14 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.concurrent.ExecutionException;
 
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,9 +28,7 @@ import java.util.stream.Collectors;
 public class ReportService {
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
-    private final AiClinetService aiClinetService;
     private final S3Service s3Service;
-    private final BannerService bannerService;
     private final JwtTokenUtil jwtTokenUtil;
 
     /*현수막 신고 저장*/
@@ -87,16 +80,6 @@ public class ReportService {
                 report.getImages().add(image);
                 log.debug("Image added to report: {}", key);
             }
-
-            aiClinetService.sendImageUrlsToAiServer(report.getReportId(), request.report_log().image_keys())
-                    .thenAcceptAsync(saveBannerRequest -> {
-                        if (saveBannerRequest != null && saveBannerRequest.banner_list() != null && !saveBannerRequest.banner_list().isEmpty()) {
-                            bannerService.saveBanner(saveBannerRequest);
-                        }
-                    }).exceptionally(e -> {
-                        log.error("AI 서버 처리 중 예외 발생: {}", e.getMessage(), e);
-                        return null;
-                    });
 
             return report.getReportId();
 
