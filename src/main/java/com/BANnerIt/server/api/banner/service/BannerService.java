@@ -56,6 +56,7 @@ public class BannerService {
                         .category(bannerDetails.category())
                         .companyName(bannerDetails.company_name())
                         .phoneNumber(bannerDetails.phone_number())
+                        .createdAt(ZonedDateTime.now())
                         .build();
 
                 bannerRepository.save(banner);
@@ -112,6 +113,7 @@ public class BannerService {
 
             log.info("[updateBanner] 현수막 조회 완료 - bannerId: {}, 이전 상태: {}", banner.getBannerId(), banner.getStatus());
             banner.setStatus(bannerInfo.status());
+            banner.setUpdatedAt(ZonedDateTime.now());
             bannerRepository.save(banner);
             log.info("[updateBanner] 현수막 상태 업데이트 완료 - bannerId: {}, 새로운 상태: {}", banner.getBannerId(), banner.getStatus());
         }
