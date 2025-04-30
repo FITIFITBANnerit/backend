@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
@@ -33,7 +34,7 @@ public class BannerService {
     //프론트에 알림가게 하는거 x
     /*현수막 라벨링 정보 저장*/
     @Async
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveBanner(SaveBannerRequest request) {
         log.info("saveBanner 시작 - report_id: {}, banner_list 크기: {}",
                 request.report_id(),
