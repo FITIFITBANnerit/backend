@@ -130,9 +130,10 @@ public class ReportService {
 
     // 배너 리스트를 DTO로 변환
     private static List<BannerDetailsWithIdDto> convertBannersToDto(List<Banner> banners) {
+
         return banners.stream()
                 .map(b -> new BannerDetailsWithIdDto(b.getBannerId(),
-                        b.getStatus(), b.getCategory(), b.getCompanyName(), b.getPhoneNumber()))
+                        b.getStatus(), b.getCategory(), b.getCompanyName(), b.getPhoneNumber(), List.of(b.getCenterX(), b.getCenterY()), b.getWidth(), b.getHeight()))
                 .collect(Collectors.toList());
     }
 }

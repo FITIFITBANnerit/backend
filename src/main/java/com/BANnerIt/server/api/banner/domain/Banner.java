@@ -27,6 +27,10 @@ public class Banner {
     private String category;
     private String companyName;
     private String phoneNumber;
+    private float centerX;
+    private float centerY;
+    private float width;
+    private float height;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssX")
     private ZonedDateTime createdAt;
