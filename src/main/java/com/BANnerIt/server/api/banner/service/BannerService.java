@@ -57,6 +57,10 @@ public class BannerService {
                         .category(bannerDetails.category())
                         .companyName(bannerDetails.company_name())
                         .phoneNumber(bannerDetails.phone_number())
+                        .centerX(bannerDetails.center().get(0))
+                        .centerY(bannerDetails.center().get(1))
+                        .width(bannerDetails.width())
+                        .height(bannerDetails.height())
                         .createdAt(ZonedDateTime.now())
                         .build();
 
