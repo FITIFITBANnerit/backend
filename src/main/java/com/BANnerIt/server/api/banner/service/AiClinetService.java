@@ -65,15 +65,13 @@ public class AiClinetService {
             List<BannerDetailsDto> bannerList = new ArrayList<>();
             List<Map<String, Object>> bannerListMap = (List<Map<String, Object>>) bannerListObj;
             for (Map<String, Object> bannerMap : bannerListMap) {
+                List<Double> center = (List<Double>) bannerMap.get("center");
                 BannerDetailsDto bannerDetails = new BannerDetailsDto(
                         BannerStatus.valueOf((String) bannerMap.get("status")),
                         (String) bannerMap.get("category"),
                         (String) bannerMap.get("company_name"),
                         (String) bannerMap.get("phone_number"),
-                        List.of(
-                                ((Number) bannerMap.get("center_x")).floatValue(),
-                                ((Number) bannerMap.get("center_y")).floatValue()
-                        ),
+                        List.of(center.get(0).floatValue(), center.get(1).floatValue()),
                         ((Number) bannerMap.get("width")).floatValue(),
                         ((Number) bannerMap.get("height")).floatValue()
                 );
