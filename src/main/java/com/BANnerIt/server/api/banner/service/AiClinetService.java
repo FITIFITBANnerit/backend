@@ -69,10 +69,17 @@ public class AiClinetService {
                         BannerStatus.valueOf((String) bannerMap.get("status")),
                         (String) bannerMap.get("category"),
                         (String) bannerMap.get("company_name"),
-                        (String) bannerMap.get("phone_number")
+                        (String) bannerMap.get("phone_number"),
+                        List.of(
+                                ((Number) bannerMap.get("center_x")).floatValue(),
+                                ((Number) bannerMap.get("center_y")).floatValue()
+                        ),
+                        ((Number) bannerMap.get("width")).floatValue(),
+                        ((Number) bannerMap.get("height")).floatValue()
                 );
                 bannerList.add(bannerDetails);
             }
+
             // SaveBannerRequest 객체 생성
             SaveBannerRequest saveBannerRequest = new SaveBannerRequest(reportId, bannerList);
 
