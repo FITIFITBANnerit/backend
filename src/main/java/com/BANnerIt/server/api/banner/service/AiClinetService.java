@@ -61,21 +61,25 @@ public class AiClinetService {
             Map<String, Object> responseBody = response.getBody();
             Object bannerListObj = responseBody.get("banner_list");
 
+            List<BannerDetailsDto> bannerList = null;
+
             // AI 서버 응답에서 배너 리스트 추출
-            List<BannerDetailsDto> bannerList = new ArrayList<>();
-            List<Map<String, Object>> bannerListMap = (List<Map<String, Object>>) bannerListObj;
-            for (Map<String, Object> bannerMap : bannerListMap) {
-                List<Double> center = (List<Double>) bannerMap.get("center");
-                BannerDetailsDto bannerDetails = new BannerDetailsDto(
-                        BannerStatus.valueOf((String) bannerMap.get("status")),
-                        (String) bannerMap.get("category"),
-                        (String) bannerMap.get("company_name"),
-                        (String) bannerMap.get("phone_number"),
-                        List.of(center.get(0).floatValue(), center.get(1).floatValue()),
-                        ((Number) bannerMap.get("width")).floatValue(),
-                        ((Number) bannerMap.get("height")).floatValue()
-                );
-                bannerList.add(bannerDetails);
+            if (bannerListObj != null) {
+                bannerList = new ArrayList<>();
+                List<Map<String, Object>> bannerListMap = (List<Map<String, Object>>) bannerListObj;
+                for (Map<String, Object> bannerMap : bannerListMap) {
+                    List<Double> center = (List<Double>) bannerMap.get("center");
+                    BannerDetailsDto bannerDetails = new BannerDetailsDto(
+                            BannerStatus.valueOf((String) bannerMap.get("status")),
+                            (String) bannerMap.get("category"),
+                            (String) bannerMap.get("company_name"),
+                            (String) bannerMap.get("phone_number"),
+                            List.of(center.get(0).floatValue(), center.get(1).floatValue()),
+                            ((Number) bannerMap.get("width")).floatValue(),
+                            ((Number) bannerMap.get("height")).floatValue()
+                    );
+                    bannerList.add(bannerDetails);
+                }
             }
 
             // SaveBannerRequest 객체 생성
