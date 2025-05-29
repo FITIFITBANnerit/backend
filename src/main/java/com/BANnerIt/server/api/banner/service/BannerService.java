@@ -46,30 +46,32 @@ public class BannerService {
                     return new RuntimeException("Report not found");
                 });
 
-        assert request.banner_list() != null;
-        for (BannerDetailsDto bannerDetails : request.banner_list()) {
-            try {
-                log.debug("Banner 저장 시도: {}", bannerDetails);
-
-                Banner banner = Banner.builder()
-                        .report(report)
-                        .status(bannerDetails.status())
-                        .category(bannerDetails.category())
-                        .companyName(bannerDetails.company_name())
-                        .phoneNumber(bannerDetails.phone_number())
-                        .centerX(bannerDetails.center().get(0))
-                        .centerY(bannerDetails.center().get(1))
-                        .width(bannerDetails.width())
-                        .height(bannerDetails.height())
-                        .createdAt(ZonedDateTime.now())
-                        .build();
-
-                bannerRepository.save(banner);
-                log.debug("Banner 저장 성공: {}", banner);
-
-            } catch (Exception e) {
-                log.error("Banner 저장 실패 - 입력값: {}, 오류: {}", bannerDetails, e.getMessage(), e);
-                throw e;
+        List<BannerDetailsDto> bannerList = request.banner_list();
+        if (bannerList != null) {
+            for (BannerDetailsDto bannerDetails : bannerList) {
+                try {
+                    log.debug("Banner 저장 시도: {}", bannerDetails);
+            
+                    Banner banner = Banner.builder()
+                            .report(report)
+                            .status(bannerDetails.status())
+                            .category(bannerDetails.category())
+                            .companyName(bannerDetails.company_name())
+                            .phoneNumber(bannerDetails.phone_number())
+                            .centerX(bannerDetails.center().get(0))
+                            .centerY(bannerDetails.center().get(1))
+                            .width(bannerDetails.width())
+                            .height(bannerDetails.height())
+                            .createdAt(ZonedDateTime.now())
+                            .build();
+            
+                    bannerRepository.save(banner);
+                    log.debug("Banner 저장 성공: {}", banner);
+            
+                } catch (Exception e) {
+                    log.error("Banner 저장 실패 - 입력값: {}, 오류: {}", bannerDetails, e.getMessage(), e);
+                    throw e;
+                }
             }
         }
 
